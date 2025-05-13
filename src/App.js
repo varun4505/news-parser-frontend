@@ -5,7 +5,7 @@ import './App.css';
 import NewsCard from './components/NewsCard';
 import Header from './components/Header';
 
-const BACKEND_URL = 'http://localhost:5000';
+const BACKEND_URL = 'https://news-parser-ai.vercel.app/';
 
 function App() {
   const [query, setQuery] = useState('latest news');
