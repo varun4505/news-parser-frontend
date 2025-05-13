@@ -6,7 +6,7 @@ import NewsCard from './components/NewsCard';
 import Header from './components/Header';
 
 // Use the deployed backend URL when available, fallback to localhost for development
-const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000'||'https://news-parser-ai.vercel.app/';
 
 function App() {
   const [query, setQuery] = useState('latest news');
