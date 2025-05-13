@@ -1,0 +1,74 @@
+.App {
+  min-height: 100vh;
+}
+
+.category-badge {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  margin-right: 5px;
+}
+
+.sentiment-badge {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+}
+
+.news-card {
+  height: 100%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.news-card:hover {
+  transform: translateY(-5px);
+}
+
+.news-card .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.news-card .card-text {
+  font-size: 0.9rem;
+}
+
+.news-meta {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #0062E6, #33AEFF);
+  color: white;
+  padding: 2rem 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.app-header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.filter-badge {
+  font-size: 0.8rem;
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 5px 10px;
+  border-radius: 20px;
+  margin-right: 10px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.filter-badge .badge-label {
+  font-weight: 600;
+  margin-right: 5px;
+}
+
+.filters-section {
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #e9ecef;
+}
