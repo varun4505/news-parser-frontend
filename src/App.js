@@ -5,7 +5,8 @@ import './App.css';
 import NewsCard from './components/NewsCard';
 import Header from './components/Header';
 
-const BACKEND_URL = 'http://localhost:5000/';
+// Use the deployed backend URL when available, fallback to localhost for development
+const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function App() {
   const [query, setQuery] = useState('latest news');
@@ -49,9 +50,8 @@ function App() {
   ];const fetchNews = async (searchQuery) => {
     try {
       setLoading(true);
-      setError('');
-      const response = await axios.get(
-        `${BACKEND_URL}/news/${encodeURIComponent(searchQuery)}`, {
+      setError('');      const response = await axios.get(
+        `${BACKEND_URL.replace(/\/+$/, '')}/news/${encodeURIComponent(searchQuery)}`, {
           params: {
             language: selectedLanguage,
             country: selectedCountry,
@@ -90,7 +90,7 @@ function App() {
   const fetchOptions = async () => {
     try {
       console.log('Fetching options from server...');
-      const response = await axios.get(`${BACKEND_URL}/options`);
+      const response = await axios.get(`${BACKEND_URL.replace(/\/+$/, '')}/options`);
       
       if (response.data && 
           Object.keys(response.data.languages).length > 0 && 
