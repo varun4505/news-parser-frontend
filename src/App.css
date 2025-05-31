@@ -17,6 +17,8 @@
   height: 100%;
   transition: transform 0.3s ease;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 .news-card:hover {
@@ -30,6 +32,14 @@
 
 .news-card .card-text {
   font-size: 0.9rem;
+}
+
+.news-card .card-body {
+  flex: 1 0 auto;
+}
+
+.news-card .card-footer {
+  margin-top: auto;
 }
 
 .news-meta {
@@ -49,15 +59,38 @@
   margin-bottom: 0.5rem;
 }
 
+/* Client Selection Styles */
+.client-search {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.client-keywords {
+  padding: 10px 0;
+}
+
+.client-keyword-badge {
+  transition: all 0.2s ease;
+}
+
+.client-keyword-badge:hover {
+  background-color: #0d6efd !important;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Filter Badge Styles */
 .filter-badge {
-  font-size: 0.8rem;
-  background-color: #e9ecef;
-  color: #495057;
-  padding: 5px 10px;
-  border-radius: 20px;
-  margin-right: 10px;
   display: inline-flex;
   align-items: center;
+  background-color: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  font-size: 0.8rem;
 }
 
 .filter-badge .badge-label {
@@ -65,10 +98,95 @@
   margin-right: 5px;
 }
 
+.badge-label {
+  font-weight: bold;
+  color: #6c757d;
+  margin-right: 4px;
+}
+
 .filters-section {
   background-color: #f8f9fa;
   border-radius: 5px;
   padding: 15px;
   margin-bottom: 15px;
+  border: 1px solid #e9ecef;
+}
+
+/* Pagination styles */
+.pagination {
+  margin-bottom: 0;
+}
+
+.pagination .page-link {
+  color: #0d6efd;
+  cursor: pointer;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #6c757d;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* API limit notification */
+.api-limit-note {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  border-left: 4px solid #ffc107;
+}
+
+/* Keyword Results Styles */
+.keyword-results-container .nav-tabs {
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 20px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.keyword-results-container .nav-tabs::-webkit-scrollbar {
+  height: 5px;
+}
+
+.keyword-results-container .nav-tabs::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 10px;
+}
+
+.keyword-results-container .nav-tabs .nav-link {
+  margin-bottom: -1px;
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.keyword-results-container .nav-tabs .nav-link:hover {
+  border-color: #e9ecef #e9ecef #dee2e6;
+  isolation: isolate;
+}
+
+.keyword-results-container .nav-tabs .nav-link.active {
+  background-color: #fff;
+  border-color: #dee2e6 #dee2e6 #fff;
+  font-weight: bold;
+}
+
+.keyword-results-container .tab-content {
+  padding-top: 20px;
   border: 1px solid #e9ecef;
 }
