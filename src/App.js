@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Form, Button, Spinner, Tabs, Tab, Badge, Modal } from 'react-bootstrap';
 import axios from 'axios';
+import emailjs from '@emailjs/browser';
+import { EMAILJS_CONFIG } from './config/email';
 import './App.css';
 import NewsCard from './components/NewsCard';
 import Header from './components/Header';
@@ -412,6 +414,56 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
         });
     }
   };
+  
+  // Function to send email via EmailJS
+  const sendEmail = async () => {
+    if (!receiverEmail) {
+      alert('Please enter a recipient email address');
+      return;
+    }
+    
+    try {
+      setIsScrapingInProgress(true); // Reuse the loading state for email sending
+      
+      const emailSubject = `${selectedClient ? selectedClient.name + ' ' : ''}Industry News Update - ${formatCurrentDate()}`;
+      
+      // Format the email body for sending
+      const emailContent = selectedArticles.map((article, index) => 
+        `${index + 1}. ${article.title}\n${article.description || 'No description available'}\nPublication: ${article.publication || 'N/A'}      Journalist: ${article.journalist || 'Online'}\nLink: ${article.link}\n`
+      ).join('\n');
+      
+      // Prepare the template parameters
+      const templateParams = {
+        to_email: receiverEmail,
+        subject: emailSubject,
+        client_name: selectedClient ? selectedClient.name : '',
+        email_content: emailContent,
+        from_name: 'Konnections IMAG News Tracking',
+      };
+        // Send the email using EmailJS with configuration from config file
+      const result = await emailjs.send(
+        EMAILJS_CONFIG.serviceId,
+        EMAILJS_CONFIG.templateId,
+        templateParams,
+        EMAILJS_CONFIG.userId
+      );
+      
+      console.log('Email sent successfully:', result.text);
+      alert('Email sent successfully!');
+      setShowMailModal(false);
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      alert(`Failed to send email: ${error.text}`);
+    } finally {
+      setIsScrapingInProgress(false);
+    }
+  };
+
+  // Initialize EmailJS once when the component mounts
+  useEffect(() => {
+    // Initialize EmailJS with your User ID
+    emailjs.init(EMAILJS_CONFIG.userId);
+  }, []);
 
   return (
     <div className="App">
@@ -801,15 +853,19 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
               <p className="mt-3">Preparing email content...</p>
             </div>
           ) : (
-            <Form>
-              <Form.Group className="mb-3">
+            <Form>              <Form.Group className="mb-3">
                 <Form.Label>To:</Form.Label>
                 <Form.Control
                   type="email"
                   placeholder="recipient@example.com"
                   value={receiverEmail}
                   onChange={(e) => setReceiverEmail(e.target.value)}
+                  required
+                  pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                 />
+                <Form.Text className="text-muted">
+                  Enter a valid email address to send the email directly.
+                </Form.Text>
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Subject:</Form.Label>
@@ -860,16 +916,26 @@ Please review our website: https://www.konnectionsimag.com`}
           </Button>
           <Button variant="primary" onClick={copyEmailToClipboard} disabled={isScrapingInProgress}>
             Copy to Clipboard
-          </Button>
-          <Button 
+          </Button>          <Button 
             variant="success" 
-            onClick={() => {
-              alert('Email would be sent in a real implementation');
-              setShowMailModal(false);
-            }}
+            onClick={sendEmail}
             disabled={isScrapingInProgress}
           >
-            Send Email
+            {isScrapingInProgress ? (
+              <>
+                <Spinner 
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                  className="me-2"
+                />
+                Sending...
+              </>
+            ) : (
+              'Send Email'
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
