@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Spinner, Tabs, Tab, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Spinner, Tabs, Tab, Badge, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import './App.css';
 import NewsCard from './components/NewsCard';
@@ -18,7 +18,12 @@ function App() {
   const [loadingKeywords, setLoadingKeywords] = useState({}); // Track loading state for each keyword
   const [error, setError] = useState('');  const [selectedClient, setSelectedClient] = useState(null);  const [activeKeyword, setActiveKeyword] = useState(null); // Currently active keyword tab
   const [currentPage, setCurrentPage] = useState(1);
-  const RESULTS_PER_PAGE = 15; // Increased number of results to show per page
+  const RESULTS_PER_PAGE = 15; // Increased number of results to show per page  // State for mail composition
+  const [selectedArticles, setSelectedArticles] = useState([]);
+  const [showMailModal, setShowMailModal] = useState(false);
+  const [receiverEmail, setReceiverEmail] = useState('');
+  const [scrapingStatus, setScrapingStatus] = useState({});
+  const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);
   const [options, setOptions] = useState({
     languages: {
       'en': 'English',
@@ -333,6 +338,81 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
     setCurrentPage(pageNumber);
   };
 
+  // Handle article selection for email
+  const handleArticleToggle = (article) => {
+    setSelectedArticles(prevSelected => {
+      // If article is already selected, remove it
+      if (prevSelected.some(a => a.link === article.link)) {
+        return prevSelected.filter(a => a.link !== article.link);
+      } 
+      // Otherwise add it
+      else {
+        return [...prevSelected, article];
+      }
+    });
+  };
+
+  // Check if an article is selected
+  const isArticleSelected = (article) => {
+    return selectedArticles.some(a => a.link === article.link);
+  };
+    // Format current date for email subject
+  const formatCurrentDate = () => {
+    const today = new Date();
+    return today.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+  
+  // Function to scrape articles and prepare for email
+  const scrapeSelectedArticles = async () => {
+    if (selectedArticles.length === 0) return;
+    
+    setIsScrapingInProgress(true);
+    const updatedScrapingStatus = {};
+    
+    // In a real implementation, you would make API calls to scrape each article
+    // For this example, we'll simulate scraping with a timeout
+    for (const article of selectedArticles) {
+      updatedScrapingStatus[article.link] = 'pending';
+      setScrapingStatus({...updatedScrapingStatus});
+      
+      try {
+        console.log(`Scraping article: ${article.title}`);
+        // Simulate web scraping with a timeout
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // In a real implementation, you'd fetch additional info here:
+        // - Full article text
+        // - Author information
+        // - Publication details
+        // - Image URLs
+        
+        // Mark as complete - in a real implementation, you would store the scraped data
+        updatedScrapingStatus[article.link] = 'complete';
+      } catch (error) {
+        console.error(`Error scraping article: ${article.title}`, error);
+        updatedScrapingStatus[article.link] = 'error';
+      }
+      
+      setScrapingStatus({...updatedScrapingStatus});
+    }
+    
+    setIsScrapingInProgress(false);
+    setShowMailModal(true);
+  };
+    // Function to copy email template to clipboard
+  const copyEmailToClipboard = () => {
+    const emailBody = document.getElementById('email-body');
+    if (emailBody) {
+      navigator.clipboard.writeText(emailBody.innerText)
+        .then(() => {
+          alert('Email content copied to clipboard!');
+        })
+        .catch(err => {
+          console.error('Failed to copy text: ', err);
+        });
+    }
+  };
+
   return (
     <div className="App">
       <Header />      
@@ -530,7 +610,11 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
                         {getPaginatedResults(keyword) && getPaginatedResults(keyword).length > 0 ? (
                           getPaginatedResults(keyword).map((article, index) => (
                             <Col lg={4} md={6} className="mb-4" key={index}>
-                              <NewsCard article={article} />
+                              <NewsCard 
+                                article={article} 
+                                onArticleSelect={handleArticleToggle}
+                                isSelected={isArticleSelected(article)}
+                              />
                             </Col>
                           ))
                         ) : (
@@ -638,13 +722,16 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
               <Spinner animation="border" role="status">
                 <span className="visually-hidden">Loading...</span>
               </Spinner>
-            </div>
-          ) : (
+            </div>          ) : (
             <Row>
               {news.length > 0 ? (
                 news.map((article, index) => (
                   <Col lg={4} md={6} className="mb-4" key={index}>
-                    <NewsCard article={article} />
+                    <NewsCard 
+                      article={article} 
+                      onArticleSelect={handleArticleToggle}
+                      isSelected={isArticleSelected(article)}
+                    />
                   </Col>
                 ))
               ) : (
@@ -674,8 +761,118 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
               </Button>
             </p>
           </div>
-        )}
-      </Container>
+        )}      </Container>
+      
+      {/* Floating button to compose email when articles are selected */}
+      {selectedArticles.length > 0 && (
+        <div className="fixed-bottom d-flex justify-content-end p-3">          <Button 
+            variant="primary" 
+            className="rounded-circle shadow d-flex align-items-center justify-content-center"
+            style={{ width: '60px', height: '60px', position: 'relative' }}
+            onClick={scrapeSelectedArticles}
+          >
+            <i className="bi bi-envelope-fill fs-4"></i>
+            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              {selectedArticles.length}
+            </span>
+          </Button>
+        </div>
+      )}
+      
+      {/* Email Composition Modal */}
+      <Modal
+        show={showMailModal}
+        onHide={() => setShowMailModal(false)}
+        size="lg"
+        aria-labelledby="email-modal"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="email-modal">
+            Compose Industry News Update Email
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {isScrapingInProgress ? (
+            <div className="text-center my-5">
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">Scraping articles...</span>
+              </Spinner>
+              <p className="mt-3">Preparing email content...</p>
+            </div>
+          ) : (
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>To:</Form.Label>
+                <Form.Control
+                  type="email"
+                  placeholder="recipient@example.com"
+                  value={receiverEmail}
+                  onChange={(e) => setReceiverEmail(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Subject:</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={`${selectedClient ? selectedClient.name + ' ' : ''}Industry News Update - ${formatCurrentDate()}`}
+                  readOnly
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Email Body:</Form.Label>
+                <div 
+                  className="p-3 border rounded"
+                  style={{ fontFamily: 'Arial, sans-serif', whiteSpace: 'pre-line' }}
+                  id="email-body"
+                >                {`Dear Ma'am,
+
+Greetings from Konnections IMAG.
+
+Please find below the ${selectedClient ? selectedClient.name + ' ' : ''}Industry News Updates
+
+Industry News Update:
+${selectedArticles.map((article, index) => {
+  // Get scraping status for this article (if available)
+  const status = scrapingStatus[article.link];
+  const statusText = status === 'complete' ? '✓ Scraped' : status === 'pending' ? '⏳ Scraping...' : status === 'error' ? '❌ Error' : '';
+  
+  return `${index + 1}. ${article.title} ${statusText}
+${article.description || 'No description available'}
+Publication: ${article.publication || 'N/A'}      Journalist: ${article.journalist || 'Online'}
+Link: ${article.link}
+`;
+}).join('\n')}
+
+Warm Regards,
+Tracking Team
+
+Integrated Marketing Communication Consultancy  
+Please review our website: https://www.konnectionsimag.com`}
+                </div>
+              </Form.Group>
+            </Form>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowMailModal(false)}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={copyEmailToClipboard} disabled={isScrapingInProgress}>
+            Copy to Clipboard
+          </Button>
+          <Button 
+            variant="success" 
+            onClick={() => {
+              alert('Email would be sent in a real implementation');
+              setShowMailModal(false);
+            }}
+            disabled={isScrapingInProgress}
+          >
+            Send Email
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
