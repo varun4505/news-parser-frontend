@@ -49,13 +49,12 @@ const NewsCard = ({ article, isSelected, onArticleSelect }) => {
       </div>
     );
   };  return (
-    <Card className="news-card h-100" style={isSelected ? { borderColor: 'var(--primary-color)', boxShadow: '0 0 0 0.2rem rgba(30, 95, 116, 0.25)' } : {}}>
-      {article.publication && (
-        <div className="source-tag px-3 py-1">
+    <Card className="news-card h-100" style={isSelected ? { borderColor: 'var(--primary-color)', boxShadow: '0 0 0 0.2rem rgba(30, 95, 116, 0.25)' } : {}}>      {article.publication && (
+        <div className="source-tag">
           <BsGlobe className="me-1" />
           <small>{article.publication}</small>
         </div>
-      )}      <Card.Body>
+      )}<Card.Body>
         <div className="d-flex justify-content-end align-items-start mb-3">
           <Form.Check 
             type="checkbox"
