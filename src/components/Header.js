@@ -18,18 +18,15 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  return (
-    <header className={`app-header py-2 ${scrolled ? 'header-scrolled' : ''}`} style={{ borderBottom: '1px solid #e5e5e5' }}>
+  return (    <header className={`app-header py-2 ${scrolled ? 'header-scrolled' : ''}`} style={{ borderBottom: '1px solid #e5e5e5' }}>
       <Container>
         <div className="d-flex align-items-center justify-content-between"><div className="d-flex align-items-center">
-            <div className="logo-wrapper me-3">              {/* Full logo with tagline for medium and larger screens */}
-              <div className="d-none d-md-block">
+            <div className="me-3">{/* Full logo with tagline for medium and larger screens */}              <div className="d-none d-md-block">
                 <img 
                   src={`${process.env.PUBLIC_URL}/images/logo-big.png`} 
                   alt="Konnections IMAG" 
                   height="50"
                 />
-                <p className="small text-dark opacity-75 mb-0" style={{ fontSize: '0.7rem', color: '#019baf', fontStyle: 'italic' }}>we make the right impact</p>
               </div>
               
               {/* Small logo without tagline for mobile */}

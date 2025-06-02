@@ -102,17 +102,7 @@
   padding-bottom: 0.5rem !important;
 }
 
-.logo-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  transition: transform 0.3s ease;
-}
-
-.header-scrolled .logo-wrapper {
-  transform: scale(0.85);
-}
+/* Logo wrapper styling removed */
 
 .header-title {
   transition: all 0.3s ease;
@@ -230,6 +220,10 @@
   border-bottom-left-radius: var(--border-radius);
   display: flex;
   align-items: center;
+  max-width: 65%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .article-link {
@@ -314,13 +308,13 @@
 
 .search-icon {
   position: absolute;
-  left: 12px;
+  left: 15px;
   top: 50%;
   transform: translateY(-50%);
 }
 
 .client-search-input {
-  padding-left: 35px;
+  padding-left: 40px;
   border-radius: 20px;
   border: 1px solid rgba(0,0,0,0.1);
   box-shadow: var(--input-shadow);
@@ -900,6 +894,7 @@ textarea:focus,
   margin-left: 0.5rem;
   font-size: 0.85rem;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 /* Responsive Design Improvements */
@@ -925,10 +920,7 @@ textarea:focus,
     padding: 0.75rem 0;
   }
   
-  .logo-wrapper {
-    width: 40px;
-    height: 40px;
-  }
+  /* Logo wrapper styling removed */
   
   .header-title {
     font-size: 1.25rem;
@@ -991,10 +983,7 @@ textarea:focus,
     padding-bottom: 0.5rem !important;
   }
   
-  .logo-wrapper {
-    width: 36px;
-    height: 36px;
-  }
+  /* Logo wrapper styling removed */
   
   .header-title {
     font-size: 1.15rem;

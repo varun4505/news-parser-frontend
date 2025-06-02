@@ -55,15 +55,14 @@ const NewsCard = ({ article, isSelected, onArticleSelect }) => {
           <BsGlobe className="me-1" />
           <small>{article.publication}</small>
         </div>
-      )}
-      <Card.Body>
-        <div className="d-flex justify-content-between align-items-start mb-3">
+      )}      <Card.Body>
+        <div className="d-flex justify-content-end align-items-start mb-3">
           <Form.Check 
             type="checkbox"
             id={`select-article-${article.title?.substring(0, 10)}`}
             checked={isSelected}
             onChange={() => onArticleSelect(article)}
-            label={<span className="select-label">Add to digest</span>}
+            label={<span className="select-label">Add to Newsletter</span>}
             className="custom-checkbox"
           />
         </div>
