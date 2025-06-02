@@ -22,12 +22,11 @@ function App() {
   const [keywordResults, setKeywordResults] = useState({}); // Store results for each keyword
   const [loading, setLoading] = useState(false);
   const [loadingKeywords, setLoadingKeywords] = useState({}); // Track loading state for each keyword
-  const [error, setError] = useState('');
-  const [selectedClient, setSelectedClient] = useState(null);
+  const [error, setError] = useState('');  const [selectedClient, setSelectedClient] = useState(null);
   const [activeKeyword, setActiveKeyword] = useState(null); // Currently active keyword tab
   const [currentPage, setCurrentPage] = useState(1);
-  
-  // New state variables  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const RESULTS_PER_PAGE = 15; // Increased number of results to show per page// State for mail composition
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [showMailModal, setShowMailModal] = useState(false);

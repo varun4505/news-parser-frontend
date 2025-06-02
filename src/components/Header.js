@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Button, Nav } from 'react-bootstrap';
-import { FaRegNewspaper, FaQuestionCircle } from 'react-icons/fa';
+import { FaQuestionCircle } from 'react-icons/fa';
 import { BsGear } from 'react-icons/bs';
 
 const Header = () => {
@@ -22,14 +22,23 @@ const Header = () => {
   return (
     <header className={`app-header py-3 ${scrolled ? 'header-scrolled' : ''}`}>
       <Container>
-        <div className="d-flex align-items-center justify-content-between">
-          <div className="d-flex align-items-center">
+        <div className="d-flex align-items-center justify-content-between">          <div className="d-flex align-items-center">
             <div className="logo-wrapper me-3">
-              <FaRegNewspaper size={28} className="text-white" />
+              {/* Use different logos based on screen size */}              <img 
+                src={`${process.env.PUBLIC_URL}/images/logo-big.png`} 
+                alt="Company Logo" 
+                className="d-none d-md-block" 
+                height="40" 
+              />
+              <img 
+                src={`${process.env.PUBLIC_URL}/images/logo-small.png`} 
+                alt="Company Logo" 
+                className="d-block d-md-none" 
+                height="35" 
+              />
             </div>
-            <div>
-              <h1 className="h3 fw-bold mb-0 header-title">News Hub</h1>
-              <p className="small text-white opacity-75 mb-0 d-none d-sm-block">Curated news from trusted sources</p>
+            <div className="d-none d-sm-block">
+              <p className="small text-white opacity-75 mb-0">Curated news from trusted sources</p>
             </div>
           </div>
           
@@ -46,13 +55,7 @@ const Header = () => {
               </Button>
               <Button variant="outline-light" size="sm" className="rounded-circle header-icon-btn d-none d-sm-flex me-2">
                 <BsGear />
-              </Button>
-              <div className="d-none d-sm-block">
-                <div className="version-badge">
-                  <div className="badge-glow"></div>
-                  <span>Professional</span>
-                </div>
-              </div>
+              </Button>              {/* Professional badge removed */}
             </div>
           </div>
         </div>
