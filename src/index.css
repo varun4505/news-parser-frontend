@@ -1,5 +1,5 @@
-:root {
-  --primary-color: #1e5f74;
+:root {  --primary-color: #019baf;  /* Konnections IMAG teal blue */
+  --primary-color-rgb: 1, 155, 175; /* RGB values for the primary color */
   --secondary-color: #2a9d8f;
   --accent-color: #f4a261;
   --light-color: #f8f9fa;

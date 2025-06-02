@@ -18,44 +18,44 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
   return (
-    <header className={`app-header py-3 ${scrolled ? 'header-scrolled' : ''}`}>
+    <header className={`app-header py-2 ${scrolled ? 'header-scrolled' : ''}`} style={{ borderBottom: '1px solid #e5e5e5' }}>
       <Container>
-        <div className="d-flex align-items-center justify-content-between">          <div className="d-flex align-items-center">
-            <div className="logo-wrapper me-3">
-              {/* Use different logos based on screen size */}              <img 
-                src={`${process.env.PUBLIC_URL}/images/logo-big.png`} 
-                alt="Company Logo" 
-                className="d-none d-md-block" 
-                height="40" 
-              />
-              <img 
-                src={`${process.env.PUBLIC_URL}/images/logo-small.png`} 
-                alt="Company Logo" 
-                className="d-block d-md-none" 
-                height="35" 
-              />
-            </div>
-            <div className="d-none d-sm-block">
-              <p className="small text-white opacity-75 mb-0">Curated news from trusted sources</p>
+        <div className="d-flex align-items-center justify-content-between"><div className="d-flex align-items-center">
+            <div className="logo-wrapper me-3">              {/* Full logo with tagline for medium and larger screens */}
+              <div className="d-none d-md-block">
+                <img 
+                  src={`${process.env.PUBLIC_URL}/images/logo-big.png`} 
+                  alt="Konnections IMAG" 
+                  height="50"
+                />
+                <p className="small text-dark opacity-75 mb-0" style={{ fontSize: '0.7rem', color: '#019baf', fontStyle: 'italic' }}>we make the right impact</p>
+              </div>
+              
+              {/* Small logo without tagline for mobile */}
+              <div className="d-block d-md-none">
+                <img 
+                  src={`${process.env.PUBLIC_URL}/images/logo-small.png`} 
+                  alt="Konnections IMAG" 
+                  height="40"
+                />
+              </div>
             </div>
           </div>
           
-          <div className="d-flex align-items-center">
-            <Nav className="me-auto d-none d-md-flex">
-              <Nav.Link href="#dashboard" className="text-white me-3">Dashboard</Nav.Link>
-              <Nav.Link href="#analytics" className="text-white me-3">Analytics</Nav.Link>
-              <Nav.Link href="#about" className="text-white">About</Nav.Link>
+          <div className="d-flex align-items-center">            <Nav className="me-auto d-none d-md-flex">
+              <Nav.Link href="#dashboard" className="text-dark me-3">Dashboard</Nav.Link>
+              <Nav.Link href="#analytics" className="text-dark me-3">Analytics</Nav.Link>
+              <Nav.Link href="#about" className="text-dark">About</Nav.Link>
             </Nav>
             
             <div className="d-flex align-items-center ms-md-4">
-              <Button variant="outline-light" size="sm" className="rounded-circle header-icon-btn d-none d-sm-flex me-2">
+              <Button variant="outline-secondary" size="sm" className="rounded-circle header-icon-btn d-none d-sm-flex me-2">
                 <FaQuestionCircle />
               </Button>
-              <Button variant="outline-light" size="sm" className="rounded-circle header-icon-btn d-none d-sm-flex me-2">
+              <Button variant="outline-secondary" size="sm" className="rounded-circle header-icon-btn d-none d-sm-flex me-2">
                 <BsGear />
-              </Button>              {/* Professional badge removed */}
+              </Button>
             </div>
           </div>
         </div>

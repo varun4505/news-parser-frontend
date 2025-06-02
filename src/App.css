@@ -87,9 +87,9 @@
 
 /* Header Styles */
 .app-header {
-  background: linear-gradient(to right, var(--primary-color), var(--dark-color));
-  color: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  background: white;
+  color: #333;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   position: sticky;
   top: 0;
   z-index: 1020;
@@ -97,16 +97,12 @@
 }
 
 .header-scrolled {
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   padding-top: 0.5rem !important;
   padding-bottom: 0.5rem !important;
 }
 
 .logo-wrapper {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
