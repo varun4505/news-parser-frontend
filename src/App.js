@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Form, Button, Spinner, Tabs, Tab, Badge, Modal } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Form, Button, Spinner, Tabs, Tab, Badge, Modal, Card } from 'react-bootstrap';
 import axios from 'axios';
 import emailjs from '@emailjs/browser';
 import { EMAILJS_CONFIG } from './config/email';
@@ -7,6 +7,12 @@ import './App.css';
 import NewsCard from './components/NewsCard';
 import Header from './components/Header';
 import ClientDropdown from './components/ClientDropdown';
+import LoadingSkeleton from './components/LoadingSkeleton';
+import EmptyState from './components/EmptyState';
+import ToastNotification from './components/ToastNotification';
+import MobileFilterPanel from './components/MobileFilterPanel';
+import ScrollToTop from './components/ScrollToTop';
+import { BsFilter } from 'react-icons/bs';
 import clients from './data/clients';
 
 // Use the deployed backend URL when available, fallback to localhost for development
@@ -18,9 +24,16 @@ function App() {
   const [keywordResults, setKeywordResults] = useState({}); // Store results for each keyword
   const [loading, setLoading] = useState(false);
   const [loadingKeywords, setLoadingKeywords] = useState({}); // Track loading state for each keyword
-  const [error, setError] = useState('');  const [selectedClient, setSelectedClient] = useState(null);  const [activeKeyword, setActiveKeyword] = useState(null); // Currently active keyword tab
+  const [error, setError] = useState('');
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [activeKeyword, setActiveKeyword] = useState(null); // Currently active keyword tab
   const [currentPage, setCurrentPage] = useState(1);
-  const RESULTS_PER_PAGE = 15; // Increased number of results to show per page  // State for mail composition
+  
+  // New state variables
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  // const [categoryExpanded, setCategoryExpanded] = useState(false); // Commented out as it's not used yet
+  const RESULTS_PER_PAGE = 15; // Increased number of results to show per page// State for mail composition
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [showMailModal, setShowMailModal] = useState(false);
   const [receiverEmail, setReceiverEmail] = useState('');
@@ -219,7 +232,7 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
 
   useEffect(() => {
     fetchOptions();
-  }, []);
+  }, [fetchOptions]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -465,9 +478,83 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
     emailjs.init(EMAILJS_CONFIG.userId);
   }, []);
 
+  // Show toast notification
+  const showToast = (message, type = 'success') => {
+    setToast({
+      show: true,
+      message,
+      type
+    });
+  };
+  
+  // Hide toast notification
+  const hideToast = () => {
+    setToast({
+      ...toast,
+      show: false
+    });
+  };
+  
+  // Reset filters when using the reset button in EmptyState
+  const handleResetFilters = () => {
+    setSelectedLanguage('en');
+    setSelectedCountry('IN');
+    setSelectedPeriod('7d');
+    
+    // Reset selectedClient if one is selected
+    if (selectedClient) {
+      setSelectedClient(null);
+      setActiveKeyword(null);
+    }
+    
+    showToast('Filters have been reset', 'info');
+    fetchNews('latest news');
+    setQuery('latest news');
+  };
+
   return (
     <div className="App">
-      <Header />      
+      <Header />
+      
+      {/* Mobile filter panel */}
+      {mobileFilterOpen && <div className="filter-panel-overlay open" onClick={() => setMobileFilterOpen(false)}></div>}
+      <MobileFilterPanel 
+        isOpen={mobileFilterOpen} 
+        onClose={() => setMobileFilterOpen(false)}
+        filters={{
+          languages: selectedLanguage ? [selectedLanguage] : [],
+          countries: selectedCountry ? [selectedCountry] : [],
+          period: selectedPeriod
+        }}
+        setFilters={(newFilters) => {
+          if (newFilters.languages.length > 0) setSelectedLanguage(newFilters.languages[0]);
+          if (newFilters.countries.length > 0) setSelectedCountry(newFilters.countries[0]);
+          setSelectedPeriod(newFilters.period);
+        }}
+        options={options}
+        onApplyFilters={() => fetchNews(query)}
+      />
+      
+      {/* Mobile filter trigger button */}
+      <button 
+        className="mobile-filter-trigger"
+        onClick={() => setMobileFilterOpen(true)}
+        aria-label="Open filters"
+      >
+        <BsFilter size={24} />
+      </button>
+      
+      {/* Scroll to top button */}
+      <ScrollToTop threshold={300} />
+      
+      {/* Toast notifications */}
+      {toast.show && (
+        <ToastNotification
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
       <Container className="mt-4">
         {/* Client Selection Dropdown */}
         <div className="mb-4">
@@ -479,79 +566,106 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
             onKeywordSelect={handleClientKeywordSelect}
           />
         </div>
-        
-        <Form onSubmit={handleSubmit} className="mb-4">
-          <Row>
-            <Col md={8}>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  type="text"
-                  placeholder="Search for news..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Button variant="primary" type="submit" className="w-100">
-                Search
-              </Button>
-            </Col>
-          </Row>
-            {/* Filter options */}          <Row className="mt-3">
-            <Col md={4} className="mb-2">
-              <Form.Group>                <Form.Label className="small text-muted">Language</Form.Label>
-                <Form.Select
-                  value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
+          <Form onSubmit={handleSubmit} className="mb-4">
+          <div className="search-container shadow-sm rounded overflow-hidden border-0">
+            <Row className="g-0">
+              <Col md={8} className="position-relative">
+                <div className="search-icon-wrapper">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-search text-secondary" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                  </svg>
+                </div>
+                <Form.Group className="mb-0">
+                  <Form.Control
+                    type="text"
+                    placeholder="Search for news topics, companies, or events..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="ps-5 py-3 border-0 search-input"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Button 
+                  variant="primary" 
+                  type="submit" 
+                  className="w-100 h-100 rounded-0 py-3 d-flex align-items-center justify-content-center"
                 >
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
-                  <option value="te">Telugu</option>
-                  <option value="ta">Tamil</option>
-                  <option value="ml">Malayalam</option>
-                  <option value="bn">Bengali</option>
-                  <option value="mr">Marathi</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={4} className="mb-2">
-              <Form.Group>
-                <Form.Label className="small text-muted">Country</Form.Label>
-                <Form.Select
-                  value={selectedCountry}
-                  onChange={(e) => setSelectedCountry(e.target.value)}
-                >
-                  <option value="IN">India</option>
-                  <option value="US">United States</option>
-                  <option value="GB">United Kingdom</option>
-                  <option value="CA">Canada</option>
-                  <option value="AU">Australia</option>
-                  <option value="DE">Germany</option>
-                  <option value="FR">France</option>
-                  <option value="JP">Japan</option>
-                  <option value="CN">China</option>
-                  <option value="BR">Brazil</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>            <Col md={4} className="mb-2">
-              <Form.Group>
-                <Form.Label className="small text-muted">Time Period</Form.Label>
-                <Form.Select
-                  value={selectedPeriod}
-                  onChange={(e) => setSelectedPeriod(e.target.value)}
-                >
-                  <option value="1h">Past hour</option>
-                  <option value="12h">Past 12 hours</option>
-                  <option value="1d">Past day</option>
-                  <option value="3d">Past 3 days</option>
-                  <option value="7d">Past week</option>
-                  <option value="1m">Past month</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
-        </Form>        {/* Active Filters Display */}        
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-search me-2" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                  </svg>
+                  Search
+                </Button>
+              </Col>
+            </Row>
+          </div>
+            {/* Filter options */}
+          <div className="filter-options-card p-3 mb-4 mt-3 bg-white shadow-sm rounded">
+            <div className="d-flex align-items-center mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-funnel-fill text-primary me-2" viewBox="0 0 16 16">
+                <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z"/>
+              </svg>
+              <h6 className="mb-0 fw-bold text-primary">Refine Results</h6>
+            </div>
+            
+            <Row>
+              <Col md={4} className="mb-2">
+                <Form.Group>
+                  <Form.Label className="small fw-medium text-secondary">Language</Form.Label>
+                  <Form.Select
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    className="custom-select border-0 bg-light"
+                  >
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="te">Telugu</option>
+                    <option value="ta">Tamil</option>
+                    <option value="ml">Malayalam</option>
+                    <option value="bn">Bengali</option>
+                    <option value="mr">Marathi</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4} className="mb-2">
+                <Form.Group>
+                  <Form.Label className="small fw-medium text-secondary">Country</Form.Label>
+                  <Form.Select
+                    value={selectedCountry}
+                    onChange={(e) => setSelectedCountry(e.target.value)}
+                    className="custom-select border-0 bg-light"
+                  >
+                    <option value="IN">India</option>
+                    <option value="US">United States</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="CA">Canada</option>
+                    <option value="AU">Australia</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
+                    <option value="JP">Japan</option>
+                    <option value="CN">China</option>
+                    <option value="BR">Brazil</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4} className="mb-2">
+                <Form.Group>
+                  <Form.Label className="small fw-medium text-secondary">Time Period</Form.Label>
+                  <Form.Select
+                    value={selectedPeriod}
+                    onChange={(e) => setSelectedPeriod(e.target.value)}
+                    className="custom-select border-0 bg-light"
+                  >
+                    <option value="1h">Past hour</option>
+                    <option value="12h">Past 12 hours</option>
+                    <option value="1d">Past day</option>
+                    <option value="3d">Past 3 days</option>
+                    <option value="7d">Past week</option>
+                    <option value="1m">Past month</option>
+                  </Form.Select>                </Form.Group>
+              </Col>            </Row>
+          </div>
+        </Form>        {/* Active Filters Display */}
         <div className="d-flex flex-wrap align-items-center mb-3">
           <span className="me-2 small text-muted">Active filters:</span>
           
@@ -596,65 +710,88 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
              selectedPeriod === '1m' ? 'Past month' :
              selectedPeriod}
           </div>
-        </div>
-
-        {/* Categories */}
-        <div className="category-filters mb-4">
-          <div className="d-flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <Button 
-                key={category} 
-                variant={category === 'All' ? 'primary' : 'outline-primary'}
-                onClick={() => handleCategoryClick(category)}
-                size="sm"
-              >
-                {category}
-              </Button>
-            ))}          </div>
-        </div>
-          {error && <div className="alert alert-danger">{error}</div>}
-
-        {/* Client-specific keyword news results */}
+        </div>        {/* Categories */}
+        <Card className="category-filters-card mb-4 border-0 shadow-sm">
+          <Card.Body className="p-3">
+            <div className="d-flex align-items-center mb-3">
+              <h6 className="mb-0 text-secondary fw-bold">Filter by Category</h6>
+            </div>
+            <div className="d-flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <Button 
+                  key={category} 
+                  variant={category === 'All' ? 'primary' : 'outline-primary'}
+                  onClick={() => handleCategoryClick(category)}
+                  size="sm"
+                  className="category-btn"
+                >
+                  {category}
+                </Button>
+              ))}
+            </div>
+          </Card.Body>
+        </Card>
+        
+        {error && <div className="alert alert-danger shadow-sm border-0">{error}</div>}        {/* Client-specific keyword news results */}
         {selectedClient && (
           <div className="keyword-results-container mt-4 mb-5">
-            <h4>News for {selectedClient.name}</h4>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <div className="d-flex align-items-center">
+                <h4 className="mb-0 me-2">News Insights for</h4>
+                <div className="client-badge px-3 py-1 bg-light border rounded-pill">
+                  <strong className="text-primary">{selectedClient.name}</strong>
+                </div>
+              </div>
+              <Button 
+                variant="outline-secondary" 
+                size="sm" 
+                className="d-flex align-items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-sliders me-2" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/>
+                </svg>
+                Advanced Options
+              </Button>
+            </div>
             <Tabs
               activeKey={activeKeyword || (selectedClient.keywords[0] || '')}
               onSelect={(k) => handleClientKeywordSelect(k)}
-              className="mb-4 flex-wrap"
+              className="mb-4 flex-wrap custom-tabs"
             >
               {selectedClient.keywords.map((keyword) => (
                 <Tab 
                   key={keyword} 
                   eventKey={keyword} 
                   title={
-                    <div className="d-flex align-items-center">
-                      {keyword}
+                    <div className="d-flex align-items-center px-1">
+                      <span className="keyword-tab-text">{keyword}</span>
                       {loadingKeywords[keyword] && (
                         <Spinner 
                           animation="border" 
                           size="sm" 
                           className="ms-2" 
-                          style={{ width: '12px', height: '12px' }} 
+                          variant="primary"
+                          style={{ width: '14px', height: '14px' }} 
                         />
                       )}
                       {keywordResults[keyword] && (
                         <Badge 
-                          bg="secondary" 
-                          className="ms-2"
+                          bg="light" 
+                          text="primary"
+                          className="ms-2 border"
                           pill
                         >
                           {keywordResults[keyword].length}
                         </Badge>
                       )}
                     </div>
-                  }
-                >                  {loadingKeywords[keyword] ? (
-                    <div className="text-center my-5">
-                      <Spinner animation="border" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </Spinner>
-                      <p className="mt-3">Searching for: "{keyword}"</p>
+                  }                >{loadingKeywords[keyword] ? (
+                    <div className="my-4">
+                      <div className="d-flex align-items-center mb-4">
+                        <Spinner animation="border" size="sm" variant="primary" className="me-2" />
+                        <h5 className="mb-0 text-primary">Searching for: "{keyword}"</h5>
+                      </div>
+                      <LoadingSkeleton count={6} />
                     </div>
                   ) : (
                     <>
@@ -668,24 +805,22 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
                                 isSelected={isArticleSelected(article)}
                               />
                             </Col>
-                          ))
-                        ) : (
-                          <Col className="text-center my-5">
-                            <p>No news articles found for "{keyword}".</p>
-                          </Col>
+                          ))                        ) : (
+                          <EmptyState keyword={keyword} onReset={handleResetFilters} />
                         )}
-                      </Row>
-                        {/* Pagination controls */}
+                      </Row>                      {/* Pagination controls */}
                       <div className="d-flex flex-column align-items-center my-4">
                         <nav>
-                          <ul className="pagination">
+                          <ul className="pagination pagination-md">
                             <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                               <button
-                                className="page-link"
+                                className="page-link rounded-start-pill"
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 1}
                               >
-                                &laquo; Previous
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-chevron-left" viewBox="0 0 16 16">
+                                  <path fillRule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
+                                </svg>
                               </button>
                             </li>
                             
@@ -701,19 +836,20 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
                                 </button>
                               </li>
                             ))}
-                            
-                            <li className={`page-item ${
+                              <li className={`page-item ${
                               currentPage === Math.ceil((keywordResults[keyword]?.length || 0) / RESULTS_PER_PAGE) 
                                 ? 'disabled' : ''}`}
                             >
                               <button
-                                className="page-link"
+                                className="page-link rounded-end-pill"
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={
                                   currentPage === Math.ceil((keywordResults[keyword]?.length || 0) / RESULTS_PER_PAGE)
                                 }
                               >
-                                Next &raquo;
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-chevron-right" viewBox="0 0 16 16">
+                                  <path fillRule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                                </svg>
                               </button>
                             </li>
                           </ul>
@@ -767,14 +903,13 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
           </div>
         )}
 
-        {/* Regular search results (when no client is selected) */}
-        {!selectedClient && (
+        {/* Regular search results (when no client is selected) */}        {!selectedClient && (
           loading ? (
-            <div className="text-center my-5">
-              <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </Spinner>
-            </div>          ) : (
+            <div className="my-4">
+              <h5 className="text-primary mb-4">Searching for news...</h5>
+              <LoadingSkeleton count={6} />
+            </div>
+          ) : (
             <Row>
               {news.length > 0 ? (
                 news.map((article, index) => (
@@ -785,101 +920,128 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
                       isSelected={isArticleSelected(article)}
                     />
                   </Col>
-                ))
-              ) : (
-                <Col className="text-center my-5">
-                  <p>No news articles found. Try a different search term.</p>
-                </Col>
+                ))              ) : (
+                <EmptyState message="No news articles found. Try a different search term or adjust your filters." onReset={handleResetFilters} />
               )}
             </Row>
           )
-        )}{/* Display server connection error separately */}
+        )}        {/* Display server connection error separately */}
         {!loading && news.length === 0 && !error && (
-          <div className="alert alert-info">
-            <h5>Connection to Server</h5>
-            <p>
-              If you're not seeing any articles, please make sure the backend server is running at {BACKEND_URL}.
+          <div className="connection-error-card p-4 rounded shadow-sm bg-white">
+            <div className="d-flex align-items-center mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-hdd-network text-warning me-3" viewBox="0 0 16 16">
+                <path d="M4.5 5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1M3 4.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
+                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8.5v3a1.5 1.5 0 0 1 1.5 1.5h5.5a.5.5 0 0 1 0 1H10A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5H.5a.5.5 0 0 1 0-1H6A1.5 1.5 0 0 1 7.5 10V7H2a2 2 0 0 1-2-2zm1 0v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1m6 7.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5"/>
+              </svg>
+              <h5 className="mb-0 text-dark">Server Connection</h5>
+            </div>
+            <p className="text-secondary mb-3">
+              If you're not seeing any articles, please make sure the backend server is running at <code className="bg-light px-2 py-1 rounded">{BACKEND_URL}</code>
             </p>
-            <p>
-              <Button 
-                variant="outline-primary" 
-                size="sm"
-                onClick={() => {
-                  fetchOptions();
-                  fetchNews(query);
-                }}
-              >
-                Retry Connection
-              </Button>
-            </p>
+            <Button 
+              variant="primary" 
+              size="sm"
+              className="d-flex align-items-center"
+              onClick={() => {
+                fetchOptions();
+                fetchNews(query);
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-repeat me-2" viewBox="0 0 16 16">
+                <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                <path fillRule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+              </svg>
+              Retry Connection
+            </Button>
           </div>
-        )}      </Container>
-      
-      {/* Floating button to compose email when articles are selected */}
+        )}</Container>
+        {/* Floating button to compose email when articles are selected */}
       {selectedArticles.length > 0 && (
-        <div className="fixed-bottom d-flex justify-content-end p-3">          <Button 
+        <div className="fixed-bottom d-flex justify-content-end p-4">
+          <Button 
             variant="primary" 
-            className="rounded-circle shadow d-flex align-items-center justify-content-center"
+            className="rounded-circle fab-button d-flex align-items-center justify-content-center shadow-lg"
             style={{ width: '60px', height: '60px', position: 'relative' }}
             onClick={scrapeSelectedArticles}
           >
-            <i className="bi bi-envelope-fill fs-4"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-envelope-paper" viewBox="0 0 16 16">
+              <path d="M4 0a2 2 0 0 0-2 2v1.133l-.941.502A2 2 0 0 0 0 5.4V14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5.4a2 2 0 0 0-1.059-1.765L14 3.133V2a2 2 0 0 0-2-2zm10 4.267.47.25A1 1 0 0 1 15 5.4v.817l-1 .6zm-1 3.15-3.75 2.25L8 8.917l-1.25.75L3 7.417V2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1zm-11-.6-1-.6V5.4a1 1 0 0 1 .53-.882L2 4.267zm13 .566v5.734l-4.778-2.867zm-.035 6.88A1 1 0 0 1 14 15H2a1 1 0 0 1-.965-.738L8 10.083zM1 13.116V7.383l4.778 2.867L1 13.117Z"/>
+            </svg>
             <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
               {selectedArticles.length}
+              <span className="visually-hidden">selected articles</span>
             </span>
           </Button>
         </div>
       )}
-      
-      {/* Email Composition Modal */}
+        {/* Email Composition Modal */}
       <Modal
         show={showMailModal}
         onHide={() => setShowMailModal(false)}
         size="lg"
         aria-labelledby="email-modal"
         centered
+        className="email-modal"
       >
-        <Modal.Header closeButton>
-          <Modal.Title id="email-modal">
-            Compose Industry News Update Email
+        <Modal.Header closeButton className="border-0">
+          <Modal.Title id="email-modal" className="text-primary">
+            <div className="d-flex align-items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" className="bi bi-envelope-paper me-2" viewBox="0 0 16 16">
+                <path d="M4 0a2 2 0 0 0-2 2v1.133l-.941.502A2 2 0 0 0 0 5.4V14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5.4a2 2 0 0 0-1.059-1.765L14 3.133V2a2 2 0 0 0-2-2zm10 4.267.47.25A1 1 0 0 1 15 5.4v.817l-1 .6zm-1 3.15-3.75 2.25L8 8.917l-1.25.75L3 7.417V2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1zm-11-.6-1-.6V5.4a1 1 0 0 1 .53-.882L2 4.267zm13 .566v5.734l-4.778-2.867zm-.035 6.88A1 1 0 0 1 14 15H2a1 1 0 0 1-.965-.738L8 10.083zM1 13.116V7.383l4.778 2.867L1 13.117Z"/>
+              </svg>
+              <span>Compose Industry News Digest</span>
+            </div>
           </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="px-4">
           {isScrapingInProgress ? (
-            <div className="text-center my-5">
-              <Spinner animation="border" role="status">
-                <span className="visually-hidden">Scraping articles...</span>
-              </Spinner>
-              <p className="mt-3">Preparing email content...</p>
+            <div className="text-center my-5 py-5">
+              <div className="mb-3">
+                <Spinner animation="border" variant="primary" role="status" style={{ width: "3rem", height: "3rem" }}>
+                  <span className="visually-hidden">Scraping articles...</span>
+                </Spinner>
+              </div>
+              <h5 className="text-primary mb-2">Preparing Email Content</h5>
+              <p className="text-secondary">Gathering and formatting your selected articles...</p>
             </div>
           ) : (
-            <Form>              <Form.Group className="mb-3">
-                <Form.Label>To:</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="recipient@example.com"
-                  value={receiverEmail}
-                  onChange={(e) => setReceiverEmail(e.target.value)}
-                  required
-                  pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                />
+            <Form className="email-form">
+              <Form.Group className="mb-4">
+                <Form.Label className="fw-medium">Recipient Email</Form.Label>
+                <div className="position-relative">
+                  <div className="position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-envelope" viewBox="0 0 16 16">
+                      <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
+                    </svg>
+                  </div>
+                  <Form.Control
+                    type="email"
+                    placeholder="recipient@example.com"
+                    value={receiverEmail}
+                    onChange={(e) => setReceiverEmail(e.target.value)}
+                    required
+                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                    className="ps-5 py-3"
+                  />
+                </div>
                 <Form.Text className="text-muted">
-                  Enter a valid email address to send the email directly.
+                  Enter a valid email address to send the digest directly to the recipient.
                 </Form.Text>
               </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Subject:</Form.Label>
+              <Form.Group className="mb-4">
+                <Form.Label className="fw-medium">Subject</Form.Label>
                 <Form.Control
                   type="text"
                   value={`${selectedClient ? selectedClient.name + ' ' : ''}Industry News Update - ${formatCurrentDate()}`}
                   readOnly
+                  className="py-3 bg-light"
                 />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Email Body:</Form.Label>
+                <Form.Label className="fw-medium">Email Content</Form.Label>
                 <div 
-                  className="p-3 border rounded"
-                  style={{ fontFamily: 'Arial, sans-serif', whiteSpace: 'pre-line' }}
+                  className="p-4 border rounded bg-light"
+                  style={{ fontFamily: 'Inter, sans-serif', whiteSpace: 'pre-line', fontSize: '0.95rem', lineHeight: '1.6' }}
                   id="email-body"
                 >                {`Dear Ma'am,
 
@@ -908,18 +1070,28 @@ Please review our website: https://www.konnectionsimag.com`}
                 </div>
               </Form.Group>
             </Form>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowMailModal(false)}>
-            Close
+          )}        </Modal.Body>
+        <Modal.Footer className="border-0 pt-0 px-4 pb-4">
+          <Button variant="outline-secondary" onClick={() => setShowMailModal(false)}>
+            Cancel
           </Button>
-          <Button variant="primary" onClick={copyEmailToClipboard} disabled={isScrapingInProgress}>
+          <Button 
+            variant="outline-primary" 
+            onClick={copyEmailToClipboard} 
+            disabled={isScrapingInProgress}
+            className="d-flex align-items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-clipboard me-2" viewBox="0 0 16 16">
+              <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+              <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+            </svg>
             Copy to Clipboard
-          </Button>          <Button 
-            variant="success" 
+          </Button>
+          <Button 
+            variant="primary" 
             onClick={sendEmail}
             disabled={isScrapingInProgress}
+            className="d-flex align-items-center"
           >
             {isScrapingInProgress ? (
               <>
@@ -934,11 +1106,55 @@ Please review our website: https://www.konnectionsimag.com`}
                 Sending...
               </>
             ) : (
-              'Send Email'
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-send me-2" viewBox="0 0 16 16">
+                  <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                </svg>
+                Send Email
+              </>
             )}
-          </Button>
-        </Modal.Footer>
+          </Button>        </Modal.Footer>
       </Modal>
+      
+      {/* Mobile filter panel */}
+      {mobileFilterOpen && <div className="filter-panel-overlay open" onClick={() => setMobileFilterOpen(false)}></div>}
+      <MobileFilterPanel 
+        isOpen={mobileFilterOpen} 
+        onClose={() => setMobileFilterOpen(false)}
+        filters={{
+          languages: selectedLanguage ? [selectedLanguage] : [],
+          countries: selectedCountry ? [selectedCountry] : [],
+          period: selectedPeriod
+        }}
+        setFilters={(newFilters) => {
+          if (newFilters.languages.length > 0) setSelectedLanguage(newFilters.languages[0]);
+          if (newFilters.countries.length > 0) setSelectedCountry(newFilters.countries[0]);
+          setSelectedPeriod(newFilters.period);
+        }}
+        options={options}
+        onApplyFilters={() => fetchNews(query)}
+      />
+      
+      {/* Mobile filter trigger button */}
+      <button 
+        className="mobile-filter-trigger"
+        onClick={() => setMobileFilterOpen(true)}
+        aria-label="Open filters"
+      >
+        <BsFilter size={24} />
+      </button>
+      
+      {/* Scroll to top button */}
+      <ScrollToTop threshold={300} />
+      
+      {/* Toast notifications */}
+      {toast.show && (
+        <ToastNotification
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
   );
 }

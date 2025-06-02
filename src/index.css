@@ -1,14 +1,81 @@
+:root {
+  --primary-color: #1e5f74;
+  --secondary-color: #2a9d8f;
+  --accent-color: #f4a261;
+  --light-color: #f8f9fa;
+  --dark-color: #264653;
+  --text-primary: #333333;
+  --text-secondary: #6c757d;
+  --success-color: #2ea043;
+  --warning-color: #e9c46a;
+  --danger-color: #e76f51;
+  --border-radius: 0.5rem;
+  --card-border-radius: 0.75rem;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --hover-box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --transition: all 0.25s ease;
+  --gradient-primary: linear-gradient(to right, var(--primary-color), var(--dark-color));
+  --input-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  background-color: #f8f9fa;
+  color: #333333;
+  line-height: 1.6;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Global Animation Keyframes */
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  0% { opacity: 0; transform: translateX(20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -468px 0; }
+  100% { background-position: 468px 0; }
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  :root {
+    --border-radius: 0.375rem;
+  }
+  
+  body {
+    font-size: 0.95rem;
+  }
+}
+
+/* Dark mode preparation */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --light-color: #1a1d21;
+    /* Other dark mode variables could be added here later */
+  }
 }
