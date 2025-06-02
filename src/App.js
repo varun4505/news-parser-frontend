@@ -10,9 +10,7 @@ import ClientDropdown from './components/ClientDropdown';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import ToastNotification from './components/ToastNotification';
-import MobileFilterPanel from './components/MobileFilterPanel';
 import ScrollToTop from './components/ScrollToTop';
-import { BsFilter } from 'react-icons/bs';
 import clients from './data/clients';
 
 // Use the deployed backend URL when available, fallback to localhost for development
@@ -29,40 +27,13 @@ function App() {
   const [activeKeyword, setActiveKeyword] = useState(null); // Currently active keyword tab
   const [currentPage, setCurrentPage] = useState(1);
   
-  // New state variables
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  // const [categoryExpanded, setCategoryExpanded] = useState(false); // Commented out as it's not used yet
+  // New state variables  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const RESULTS_PER_PAGE = 15; // Increased number of results to show per page// State for mail composition
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [showMailModal, setShowMailModal] = useState(false);
   const [receiverEmail, setReceiverEmail] = useState('');
   const [scrapingStatus, setScrapingStatus] = useState({});
-  const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);
-  const [options, setOptions] = useState({
-    languages: {
-      'en': 'English',
-      'hi': 'Hindi',
-      'te': 'Telugu',
-      'ta': 'Tamil',
-      'ml': 'Malayalam',
-      'bn': 'Bengali',
-      'mr': 'Marathi'
-    },
-    countries: {
-      'IN': 'India',
-      'US': 'United States',
-      'GB': 'United Kingdom'
-    },
-    periods: {
-      '1d': 'Past day',
-      '7d': 'Past week',
-      '1m': 'Past month'
-    }
-  });
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [selectedCountry, setSelectedCountry] = useState('IN');
-  const [selectedPeriod, setSelectedPeriod] = useState('1d');
+  const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);  // Filter-related state variables have been removed
   const categories = [
     'All', 
     'Politics', 
@@ -89,13 +60,10 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
     
-    // Try different parameter names that the backend might be using
+    // Remove all filter parameters, only keep the maxResults
     const response = await axios.get(
       `${BACKEND_URL.replace(/\/+$/, '')}/news/${encodeURIComponent(searchQuery)}`, {
         params: {
-          language: selectedLanguage,
-          country: selectedCountry,
-          period: selectedPeriod,
           maxResults: 100,
           max_results: 100,  // Try snake_case version 
           count: 100,        // Another common parameter name
@@ -176,63 +144,11 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
       setLoading(false);
     }
   }
-};  // Fetch available options from the backend
-  const fetchOptions = async () => {
-    try {
-      console.log('Fetching options from server...');
-      
-      // Add timeout to prevent hanging requests
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      const response = await axios.get(
-        `${BACKEND_URL.replace(/\/+$/, '')}/options`, 
-        { signal: controller.signal }
-      );
-      
-      clearTimeout(timeoutId);
-      
-      if (response.data && 
-          Object.keys(response.data.languages || {}).length > 0 && 
-          Object.keys(response.data.countries || {}).length > 0 && 
-          Object.keys(response.data.periods || {}).length > 0) {
-        console.log('Options loaded successfully:', response.data);
-        // Update options state with the fetched values
-        setOptions(response.data);
-        
-        // Update the language, country, and period if necessary
-        if (!Object.keys(response.data.languages).includes(selectedLanguage)) {
-          setSelectedLanguage(Object.keys(response.data.languages)[0]);
-        }
-        if (!Object.keys(response.data.countries).includes(selectedCountry)) {
-          setSelectedCountry(Object.keys(response.data.countries)[0]);
-        }
-        if (!Object.keys(response.data.periods).includes(selectedPeriod)) {
-          setSelectedPeriod(Object.keys(response.data.periods)[0]);
-        }
-      } else {
-        console.error('Received empty options data:', response.data);
-        // Continue with default options
-      }
-    } catch (err) {
-      console.error('Error fetching options:', err);
-      // Continue with default options, no need to display an error to the user
-    }
-  };// Fetch initial news
+};  // fetchOptions function has been removed// Fetch initial news
   useEffect(() => {
     fetchNews(query);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);  // Refetch news when filters change
-  useEffect(() => {
-    if (news.length > 0 && !loading) {
-      fetchNews(query);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedLanguage, selectedCountry, selectedPeriod]);
-
-  useEffect(() => {
-    fetchOptions();
-  }, [fetchOptions]);
+  }, []);  // Filter-related useEffect hooks have been removed
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -296,7 +212,6 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
       fetchNews(keyword, true, keyword);
     }
   };
-
   // Force fetch with different parameter name if we're not getting enough results
   const forceFetchMoreResults = (keyword) => {
     if (!keyword) return;
@@ -308,13 +223,7 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
     
     // Try appending the count directly to the URL as a query param
     axios.get(
-      `${BACKEND_URL.replace(/\/+$/, '')}/news/${encodeURIComponent(keyword)}?count=100&limit=100&max_results=100`, {
-        params: {
-          language: selectedLanguage,
-          country: selectedCountry,
-          period: selectedPeriod
-        }
-      }
+      `${BACKEND_URL.replace(/\/+$/, '')}/news/${encodeURIComponent(keyword)}?count=100&limit=100&max_results=100`
     ).then(response => {
       console.log(`Force fetch received ${response.data.length} results from backend`);
       
@@ -494,20 +403,15 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
       show: false
     });
   };
-  
-  // Reset filters when using the reset button in EmptyState
+    // Reset function simplified without filter options
   const handleResetFilters = () => {
-    setSelectedLanguage('en');
-    setSelectedCountry('IN');
-    setSelectedPeriod('7d');
-    
     // Reset selectedClient if one is selected
     if (selectedClient) {
       setSelectedClient(null);
       setActiveKeyword(null);
     }
     
-    showToast('Filters have been reset', 'info');
+    showToast('Search has been reset', 'info');
     fetchNews('latest news');
     setQuery('latest news');
   };
@@ -518,31 +422,6 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
       
       {/* Mobile filter panel */}
       {mobileFilterOpen && <div className="filter-panel-overlay open" onClick={() => setMobileFilterOpen(false)}></div>}
-      <MobileFilterPanel 
-        isOpen={mobileFilterOpen} 
-        onClose={() => setMobileFilterOpen(false)}
-        filters={{
-          languages: selectedLanguage ? [selectedLanguage] : [],
-          countries: selectedCountry ? [selectedCountry] : [],
-          period: selectedPeriod
-        }}
-        setFilters={(newFilters) => {
-          if (newFilters.languages.length > 0) setSelectedLanguage(newFilters.languages[0]);
-          if (newFilters.countries.length > 0) setSelectedCountry(newFilters.countries[0]);
-          setSelectedPeriod(newFilters.period);
-        }}
-        options={options}
-        onApplyFilters={() => fetchNews(query)}
-      />
-      
-      {/* Mobile filter trigger button */}
-      <button 
-        className="mobile-filter-trigger"
-        onClick={() => setMobileFilterOpen(true)}
-        aria-label="Open filters"
-      >
-        <BsFilter size={24} />
-      </button>
       
       {/* Scroll to top button */}
       <ScrollToTop threshold={300} />
@@ -596,141 +475,9 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
                   </svg>
                   Search
                 </Button>
-              </Col>
-            </Row>
-          </div>
-            {/* Filter options */}
-          <div className="filter-options-card p-3 mb-4 mt-3 bg-white shadow-sm rounded">
-            <div className="d-flex align-items-center mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-funnel-fill text-primary me-2" viewBox="0 0 16 16">
-                <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z"/>
-              </svg>
-              <h6 className="mb-0 fw-bold text-primary">Refine Results</h6>
-            </div>
-            
-            <Row>
-              <Col md={4} className="mb-2">
-                <Form.Group>
-                  <Form.Label className="small fw-medium text-secondary">Language</Form.Label>
-                  <Form.Select
-                    value={selectedLanguage}
-                    onChange={(e) => setSelectedLanguage(e.target.value)}
-                    className="custom-select border-0 bg-light"
-                  >
-                    <option value="en">English</option>
-                    <option value="hi">Hindi</option>
-                    <option value="te">Telugu</option>
-                    <option value="ta">Tamil</option>
-                    <option value="ml">Malayalam</option>
-                    <option value="bn">Bengali</option>
-                    <option value="mr">Marathi</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={4} className="mb-2">
-                <Form.Group>
-                  <Form.Label className="small fw-medium text-secondary">Country</Form.Label>
-                  <Form.Select
-                    value={selectedCountry}
-                    onChange={(e) => setSelectedCountry(e.target.value)}
-                    className="custom-select border-0 bg-light"
-                  >
-                    <option value="IN">India</option>
-                    <option value="US">United States</option>
-                    <option value="GB">United Kingdom</option>
-                    <option value="CA">Canada</option>
-                    <option value="AU">Australia</option>
-                    <option value="DE">Germany</option>
-                    <option value="FR">France</option>
-                    <option value="JP">Japan</option>
-                    <option value="CN">China</option>
-                    <option value="BR">Brazil</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={4} className="mb-2">
-                <Form.Group>
-                  <Form.Label className="small fw-medium text-secondary">Time Period</Form.Label>
-                  <Form.Select
-                    value={selectedPeriod}
-                    onChange={(e) => setSelectedPeriod(e.target.value)}
-                    className="custom-select border-0 bg-light"
-                  >
-                    <option value="1h">Past hour</option>
-                    <option value="12h">Past 12 hours</option>
-                    <option value="1d">Past day</option>
-                    <option value="3d">Past 3 days</option>
-                    <option value="7d">Past week</option>
-                    <option value="1m">Past month</option>
-                  </Form.Select>                </Form.Group>
               </Col>            </Row>
-          </div>
-        </Form>        {/* Active Filters Display */}
-        <div className="d-flex flex-wrap align-items-center mb-3">
-          <span className="me-2 small text-muted">Active filters:</span>
-          
-          {selectedClient && (
-            <div className="filter-badge me-2">
-              <span className="badge-label">Client:</span>
-              {selectedClient.name}
-            </div>
-          )}
-          
-          <div className="filter-badge">
-            <span className="badge-label">Language:</span>
-            {selectedLanguage === 'en' ? 'English' : 
-             selectedLanguage === 'hi' ? 'Hindi' :
-             selectedLanguage === 'te' ? 'Telugu' :
-             selectedLanguage === 'ta' ? 'Tamil' :
-             selectedLanguage === 'ml' ? 'Malayalam' :
-             selectedLanguage === 'bn' ? 'Bengali' :
-             selectedLanguage === 'mr' ? 'Marathi' :
-             selectedLanguage}
-          </div>
-          <div className="filter-badge">
-            <span className="badge-label">Country:</span>
-            {selectedCountry === 'IN' ? 'India' :
-             selectedCountry === 'US' ? 'United States' :
-             selectedCountry === 'GB' ? 'United Kingdom' :
-             selectedCountry === 'CA' ? 'Canada' :
-             selectedCountry === 'AU' ? 'Australia' :
-             selectedCountry === 'DE' ? 'Germany' :
-             selectedCountry === 'FR' ? 'France' :
-             selectedCountry === 'JP' ? 'Japan' :
-             selectedCountry === 'CN' ? 'China' :
-             selectedCountry === 'BR' ? 'Brazil' :
-             selectedCountry === 'brazil' ? 'Brazil' :
-             selectedCountry}          </div>          <div className="filter-badge">
-            <span className="badge-label">Period:</span>
-            {selectedPeriod === '1h' ? 'Past hour' :
-             selectedPeriod === '12h' ? 'Past 12 hours' :
-             selectedPeriod === '1d' ? 'Past day' :
-             selectedPeriod === '3d' ? 'Past 3 days' :
-             selectedPeriod === '7d' ? 'Past week' :
-             selectedPeriod === '1m' ? 'Past month' :
-             selectedPeriod}
-          </div>
-        </div>        {/* Categories */}
-        <Card className="category-filters-card mb-4 border-0 shadow-sm">
-          <Card.Body className="p-3">
-            <div className="d-flex align-items-center mb-3">
-              <h6 className="mb-0 text-secondary fw-bold">Filter by Category</h6>
-            </div>
-            <div className="d-flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <Button 
-                  key={category} 
-                  variant={category === 'All' ? 'primary' : 'outline-primary'}
-                  onClick={() => handleCategoryClick(category)}
-                  size="sm"
-                  className="category-btn"
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-          </Card.Body>
-        </Card>
+          </div>        </Form>        
+        {/* Active Filters Display has been removed */}        {/* Category filters have been removed */}
         
         {error && <div className="alert alert-danger shadow-sm border-0">{error}</div>}        {/* Client-specific keyword news results */}
         {selectedClient && (
@@ -930,7 +677,7 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
           <div className="connection-error-card p-4 rounded shadow-sm bg-white">
             <div className="d-flex align-items-center mb-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" className="bi bi-hdd-network text-warning me-3" viewBox="0 0 16 16">
-                <path d="M4.5 5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1M3 4.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
+                <path d="M4.5 5a.5.5 0 0 0 0-1 .5.5 0 0 0 0 1M3 4.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
                 <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8.5v3a1.5 1.5 0 0 1 1.5 1.5h5.5a.5.5 0 0 1 0 1H10A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5H.5a.5.5 0 0 1 0-1H6A1.5 1.5 0 0 1 7.5 10V7H2a2 2 0 0 1-2-2zm1 0v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1m6 7.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5"/>
               </svg>
               <h5 className="mb-0 text-dark">Server Connection</h5>
@@ -941,9 +688,7 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
             <Button 
               variant="primary" 
               size="sm"
-              className="d-flex align-items-center"
-              onClick={() => {
-                fetchOptions();
+              className="d-flex align-items-center"              onClick={() => {
                 fetchNews(query);
               }}
             >
@@ -1115,34 +860,7 @@ Please review our website: https://www.konnectionsimag.com`}
             )}
           </Button>        </Modal.Footer>
       </Modal>
-      
-      {/* Mobile filter panel */}
-      {mobileFilterOpen && <div className="filter-panel-overlay open" onClick={() => setMobileFilterOpen(false)}></div>}
-      <MobileFilterPanel 
-        isOpen={mobileFilterOpen} 
-        onClose={() => setMobileFilterOpen(false)}
-        filters={{
-          languages: selectedLanguage ? [selectedLanguage] : [],
-          countries: selectedCountry ? [selectedCountry] : [],
-          period: selectedPeriod
-        }}
-        setFilters={(newFilters) => {
-          if (newFilters.languages.length > 0) setSelectedLanguage(newFilters.languages[0]);
-          if (newFilters.countries.length > 0) setSelectedCountry(newFilters.countries[0]);
-          setSelectedPeriod(newFilters.period);
-        }}
-        options={options}
-        onApplyFilters={() => fetchNews(query)}
-      />
-      
-      {/* Mobile filter trigger button */}
-      <button 
-        className="mobile-filter-trigger"
-        onClick={() => setMobileFilterOpen(true)}
-        aria-label="Open filters"
-      >
-        <BsFilter size={24} />
-      </button>
+        {/* Mobile filter panel and trigger button have been removed */}
       
       {/* Scroll to top button */}
       <ScrollToTop threshold={300} />
