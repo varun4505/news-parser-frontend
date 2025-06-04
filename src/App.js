@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { Container, Row, Col, Form, Button, Spinner, Tabs, Tab, Badge, Modal, Card } from 'react-bootstrap';
 import axios from 'axios';
 import emailjs from '@emailjs/browser';
@@ -29,22 +30,9 @@ function App() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const RESULTS_PER_PAGE = 15; // Increased number of results to show per page// State for mail composition
   const [selectedArticles, setSelectedArticles] = useState([]);
-  const [showMailModal, setShowMailModal] = useState(false);
-  const [receiverEmail, setReceiverEmail] = useState('');
+  const [showMailModal, setShowMailModal] = useState(false);  const [receiverEmail, setReceiverEmail] = useState('');
   const [scrapingStatus, setScrapingStatus] = useState({});
-  const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);  // Filter-related state variables have been removed
-  const categories = [
-    'All', 
-    'Politics', 
-    'Business', 
-    'Technology', 
-    'Entertainment', 
-    'Sports', 
-    'Science', 
-    'Health', 
-    'Education',
-    'World'
-  ];// Fetch news for a specific search query
+  const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);  // Filter-related state variables have been removed// Fetch news for a specific search query
 const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) => {
   try {
     // Set loading state based on whether this is a keyword query or regular search
@@ -155,13 +143,7 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
       fetchNews(query);
     }
   };
-
-  const handleCategoryClick = (category) => {
-    if (category !== 'All') {
-      setQuery(category);
-      fetchNews(category);
-    }
-  };
+  // Removed handleCategoryClick function as it's no longer used after filtering functionality removal
   // Fetch news for all keywords of a client
   const fetchAllClientKeywords = async (client) => {
     if (!client || !client.keywords || client.keywords.length === 0) return;

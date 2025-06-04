@@ -8,7 +8,18 @@ const clients = [
       "Hyderabad retail real estate",
       "retail trends Telangana",
       "shopping mall news India",
-      "F&B retail India"
+      "F&B retail India",
+      "Inorbit Mall",
+      "Forum Mall",
+      "GSM Mall",
+      "Sarath City Capital Mall",
+      "Next Galleria Mall",
+      "GVK One Mall",
+      "City Center Mall",
+      "Manjeera Mall",
+      "SLN Terminus Mall",
+      "L&T Mall",
+      "Central Mall Hyderabad"
     ]
   },
   {
@@ -20,7 +31,17 @@ const clients = [
       "Adani Ports Andhra Pradesh",
       "India port infrastructure",
       "East coast port development",
-      "cargo handling statistics India"
+      "cargo handling statistics India",
+      "JSW ports",
+      "Krishnapatnam port",
+      "Mundra port",
+      "Visakhapatnam port",
+      "Kakinada port",
+      "DP World ports India",
+      "port logistics crisis",
+      "shipping container shortage",
+      "port workers strike",
+      "maritime safety standards"
     ]
   },
   {
@@ -32,7 +53,14 @@ const clients = [
       "Adani logistics expansion",
       "AP maritime infrastructure",
       "port-led development India",
-      "container traffic India"
+      "container traffic India",
+      "Chennai Port",
+      "Ennore Port",
+      "Kakinada Port",
+      "Tuticorin Port",
+      "Visakhapatnam Port",
+      "Machilipatnam Port",
+      "Gangavaram Port"
     ]
   },
   {
@@ -44,7 +72,17 @@ const clients = [
       "healthy cooking oil trends",
       "GEF India news",
       "FMCG India food products",
-      "sunflower oil imports India"
+      "sunflower oil imports India",
+      "Fortune Oils",
+      "Saffola",
+      "Dhara Oils",
+      "Gemini Cooking Oils",
+      "Patanjali Edible Oils",
+      "Cargill India",
+      "Sundrop Oils",
+      "Emami Agrotech",
+      "Ruchi Soya",
+      "Adani Wilmar"
     ]
   },
   {
@@ -56,7 +94,17 @@ const clients = [
       "TMT bars Telangana",
       "Jai Raj Ispat news",
       "infrastructure steel demand India",
-      "BIS steel certification India"
+      "BIS steel certification India",
+      "JSW Steel",
+      "SAIL",
+      "Tata Steel",
+      "RINL Vizag Steel",
+      "Jindal Steel",
+      "Essar Steel",
+      "VISA Steel",
+      "ArcelorMittal Nippon Steel",
+      "Bhushan Steel",
+      "Shyam Steel"
     ]
   },
   {
@@ -68,7 +116,18 @@ const clients = [
       "CREDAI Hyderabad updates",
       "housing sector Telangana",
       "urban development India",
-      "RERA Hyderabad"
+      "RERA Hyderabad",
+      "Prestige Group",
+      "Lodha Group",
+      "DLF Limited",
+      "Brigade Group",
+      "Sobha Developers",
+      "Godrej Properties",
+      "Ramky Infrastructure",
+      "My Home Group",
+      "Aparna Constructions",
+      "Shathabdi Group",
+      "Vasavi Group"
     ]
   },
   {
@@ -80,7 +139,18 @@ const clients = [
       "Hyderabad hotel industry",
       "luxury hotel trends India",
       "Gachibowli tourism",
-      "hospitality sector recovery India"
+      "hospitality sector recovery India",
+      "Marriott Hyderabad",
+      "Novotel HICC",
+      "ITC Kohenur",
+      "Westin Mindspace",
+      "Park Hyatt Hyderabad",
+      "Taj Krishna",
+      "Trident Hyderabad",
+      "Radisson Hyderabad",
+      "hotel occupancy rates Hyderabad",
+      "MICE tourism Telangana",
+      "business travel Hyderabad"
     ]
   },
   {
@@ -92,7 +162,17 @@ const clients = [
       "Mercure hotels news",
       "Hyderabad hotel market",
       "midscale hotel trends India",
-      "travel and tourism Hyderabad"
+      "travel and tourism Hyderabad",
+      "Novotel Hyderabad",
+      "ibis Hyderabad",
+      "Fairfield by Marriott",
+      "Courtyard by Marriott",
+      "Holiday Inn Express",
+      "Lemon Tree Hotels",
+      "Fortune Hotels",
+      "Taj Deccan",
+      "Vivanta Hyderabad",
+      "Park Inn by Radisson"
     ]
   },
   {
@@ -105,7 +185,17 @@ const clients = [
       "children health India",
       "Hyderabad hospital updates",
       "healthcare innovation India",
-      "private hospitals Telangana"
+      "private hospitals Telangana",
+      "Apollo Hospital",
+      "Kamineni Hospital",
+      "Care Hospitals",
+      "KIMS Hospital",
+      "Yashoda Hospitals",
+      "Rainbow Children's Hospital",
+      "Fernandez Hospital",
+      "maternity services Hyderabad",
+      "pediatric healthcare Telangana",
+      "hospital crisis"
     ]
   },
   {
@@ -117,7 +207,18 @@ const clients = [
       "life sciences news Hyderabad",
       "biotech investments Telangana",
       "Genome Valley Hyderabad",
-      "pharma exports India"
+      "pharma exports India",
+      "Dr Reddy's Labs",
+      "Aurobindo Pharma",
+      "Hetero Labs",
+      "Mylan Laboratories",
+      "Biological E",
+      "Bharat Biotech",
+      "Divis Laboratories",
+      "Natco Pharma",
+      "Laurus Labs",
+      "Shantha Biotechnics",
+      "Indian Immunologicals"
     ]
   },
   {
@@ -129,7 +230,18 @@ const clients = [
       "AI startups India",
       "fintech innovation Hyderabad",
       "digital payments trends",
-      "AI in retail India"
+      "AI in retail India",
+      "Fractal Analytics",
+      "SigTuple",
+      "Haptik AI",
+      "Razorpay",
+      "Pine Labs",
+      "Perfios",
+      "MuSigma",
+      "ThoughtSpot",
+      "Absentia VR",
+      "Netradyne",
+      "Locus AI"
     ]
   },
   {
@@ -141,7 +253,18 @@ const clients = [
       "CBSE/IB curriculum India",
       "education sector Telangana",
       "EdTech India trends",
-      "school admissions Hyderabad"
+      "school admissions Hyderabad",
+      "Oakridge International School",
+      "Delhi Public School",
+      "Glendale Academy",
+      "Chirec International School",
+      "Meridian School",
+      "Sancta Maria International School",
+      "Silver Oaks International School",
+      "NASR School",
+      "Indus International School",
+      "Johnson Grammar School",
+      "Manthan International School"
     ]
   }
 ];
