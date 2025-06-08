@@ -33,6 +33,8 @@ function App() {
   const [scrapingStatus, setScrapingStatus] = useState({});
   const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);  const [selectedKeywords, setSelectedKeywords] = useState([]);
   const [keywordsConfirmed, setKeywordsConfirmed] = useState(false);
+  const [generalSearchQuery, setGeneralSearchQuery] = useState('');
+  const [isGeneralSearching, setIsGeneralSearching] = useState(false);
 
   // Fetch news for a specific search query
   const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) => {
@@ -391,13 +393,17 @@ function App() {
     } finally {
       setIsScrapingInProgress(false);
     }
-  };
-
-  // Initialize EmailJS once when the component mounts
+  };  // Initialize EmailJS and fetch initial news
   useEffect(() => {
     // Initialize EmailJS with your User ID
     emailjs.init(EMAILJS_CONFIG.userId);
-  }, []);
+    
+    // Only fetch initial news if no client is selected
+    if (!selectedClient) {
+      fetchNews('latest news');
+      setGeneralSearchQuery('latest news');
+    }
+  }, [selectedClient]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Show toast notification
   const showToast = (message, type = 'success') => {
@@ -415,17 +421,46 @@ function App() {
       show: false
     });
   };
-    // Reset function simplified without filter options
+    // Handle general news search from header
+  const handleGeneralSearch = async (searchQuery) => {
+    if (!searchQuery.trim()) return;
+    
+    // Clear client selection and reset to general search mode
+    setSelectedClient(null);
+    setActiveKeyword(null);
+    setKeywordsConfirmed(false);
+    setSelectedKeywords([]);
+    setCurrentPage(1);
+    
+    setIsGeneralSearching(true);
+    setQuery(searchQuery);
+    
+    try {
+      await fetchNews(searchQuery, false, null);
+      showToast(`Found articles for "${searchQuery}"`, 'success');
+    } catch (error) {
+      showToast('Search failed. Please try again.', 'error');
+    } finally {
+      setIsGeneralSearching(false);
+    }  };
+
+  // Reset function simplified without filter options
   const handleResetFilters = () => {
     // Reset selectedClient if one is selected
     if (selectedClient) {
       setSelectedClient(null);
       setActiveKeyword(null);
+      setKeywordsConfirmed(false);
+      setSelectedKeywords([]);
     }
+    
+    // Reset search and fetch latest news
+    setGeneralSearchQuery('latest news');
+    setQuery('latest news');
+    setCurrentPage(1);
     
     showToast('Search has been reset', 'info');
     fetchNews('latest news');
-    setQuery('latest news');
   };
 
   // Handle keyword selection for a client (switching between tabs)
@@ -438,10 +473,14 @@ function App() {
       fetchNews(keyword, true, keyword);
     }
   };
-
   return (
     <div className="App">
-      <Header />
+      <Header 
+        onSearch={handleGeneralSearch}
+        searchQuery={generalSearchQuery}
+        setSearchQuery={setGeneralSearchQuery}
+        isSearching={isGeneralSearching}
+      />
       
       {/* Mobile filter panel */}
       {mobileFilterOpen && <div className="filter-panel-overlay open" onClick={() => setMobileFilterOpen(false)}></div>}
@@ -662,32 +701,60 @@ function App() {
               ))}
             </Tabs>
           </div>
+        )}        {/* Regular search results (when no client is selected) */}
+        {!selectedClient && (
+          <>
+            {/* Display current search query */}
+            {generalSearchQuery && generalSearchQuery !== 'latest news' && (
+              <div className="mb-3">
+                <div className="d-flex align-items-center justify-content-between">
+                  <h5 className="mb-0 text-muted">
+                    Search results for: <span className="text-primary">"{generalSearchQuery}"</span>
+                  </h5>
+                  <Button 
+                    variant="outline-secondary" 
+                    size="sm"
+                    onClick={handleResetFilters}
+                    className="d-flex align-items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" className="bi bi-x-circle me-1" viewBox="0 0 16 16">
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                    Clear
+                  </Button>
+                </div>
+                <hr className="mt-2 mb-4" />
+              </div>
+            )}
+            
+            {(loading || isGeneralSearching) ? (
+              <div className="my-4">
+                <h5 className="text-primary mb-4">
+                  {isGeneralSearching ? `Searching for "${generalSearchQuery}"...` : 'Searching for news...'}
+                </h5>
+                <LoadingSkeleton count={6} />
+              </div>
+            ) : (
+              <Row>
+                {news.length > 0
+      ? news.map((article, index) => (
+          <Col lg={4} md={6} className="mb-4" key={index}>
+            <NewsCard 
+              article={article} 
+              onArticleSelect={handleArticleToggle}
+              isSelected={isArticleSelected(article)}
+            />
+          </Col>
+        ))
+      : (
+          <EmptyState message="No news articles found. Try a different search term or adjust your filters." onReset={handleResetFilters} />
+        )}              </Row>
+            )}
+          </>
         )}
-
-        {/* Regular search results (when no client is selected) */}        {!selectedClient && (
-          loading ? (
-            <div className="my-4">
-              <h5 className="text-primary mb-4">Searching for news...</h5>
-              <LoadingSkeleton count={6} />
-            </div>
-          ) : (
-            <Row>
-              {news.length > 0
-  ? news.map((article, index) => (
-      <Col lg={4} md={6} className="mb-4" key={index}>
-        <NewsCard 
-          article={article} 
-          onArticleSelect={handleArticleToggle}
-          isSelected={isArticleSelected(article)}
-        />
-      </Col>
-    ))
-  : (
-      <EmptyState message="No news articles found. Try a different search term or adjust your filters." onReset={handleResetFilters} />
-    )}
-            </Row>
-          )
-        )}        {/* Display server connection error separately */}
+        
+        {/* Display server connection error separately */}
         {!loading && news.length === 0 && !error && (
           <div className="connection-error-card p-4 rounded shadow-sm bg-white">
             <div className="d-flex align-items-center mb-3">
@@ -711,11 +778,12 @@ function App() {
                 <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
                 <path fillRule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
               </svg>
-              Retry Connection
-            </Button>
+              Retry Connection            </Button>
           </div>
-        )}</Container>
-        {/* Floating button to compose email when articles are selected */}
+        )}
+      </Container>
+      
+      {/* Floating button to compose email when articles are selected */}
       {selectedArticles.length > 0 && (
         <div className="fixed-bottom d-flex justify-content-end p-4">
           <Button 
