@@ -413,6 +413,17 @@ function App() {
     setQuery('latest news');
   };
 
+  // Handle keyword selection for a client (switching between tabs)
+  const handleClientKeywordSelect = (keyword) => {
+    setActiveKeyword(keyword);
+    setCurrentPage(1); // Reset to first page when switching keywords
+    if (keywordResults[keyword]) {
+      setNews(keywordResults[keyword]);
+    } else {
+      fetchNews(keyword, true, keyword);
+    }
+  };
+
   return (
     <div className="App">
       <Header />
