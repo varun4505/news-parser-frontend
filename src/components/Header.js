@@ -40,13 +40,7 @@ const Header = () => {
             </div>
           </div>
           
-          <div className="d-flex align-items-center">            <Nav className="me-auto d-none d-md-flex">
-              <Nav.Link href="#dashboard" className="text-dark me-3">Dashboard</Nav.Link>
-              <Nav.Link href="#analytics" className="text-dark me-3">Analytics</Nav.Link>
-              <Nav.Link href="#about" className="text-dark">About</Nav.Link>
-            </Nav>
-            
-            <div className="d-flex align-items-center ms-md-4">
+          <div className="d-flex align-items-center">            <div className="d-flex align-items-center ms-md-4">
               <Button variant="outline-secondary" size="sm" className="rounded-circle header-icon-btn d-none d-sm-flex me-2">
                 <FaQuestionCircle />
               </Button>

@@ -32,106 +32,109 @@ function App() {
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [showMailModal, setShowMailModal] = useState(false);  const [receiverEmail, setReceiverEmail] = useState('');
   const [scrapingStatus, setScrapingStatus] = useState({});
-  const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);  // Filter-related state variables have been removed// Fetch news for a specific search query
-const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) => {
-  try {
-    // Set loading state based on whether this is a keyword query or regular search
-    if (isKeywordQuery) {
-      setLoadingKeywords(prev => ({ ...prev, [keyword]: true }));
-    } else {
-      setLoading(true);
-    }
-      setError('');    console.log(`Fetching news for "${searchQuery}"`);    
-    
-    // Add timeout to prevent hanging requests
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-    
-    // Remove all filter parameters, only keep the maxResults
-    const response = await axios.get(
-      `${BACKEND_URL.replace(/\/+$/, '')}/news/${encodeURIComponent(searchQuery)}`, {
-        params: {
-          maxResults: 100,
-          max_results: 100,  // Try snake_case version 
-          count: 100,        // Another common parameter name
-          limit: 100,        // Another possible parameter name
-          num: 100           // Yet another possibility
-        },
-        signal: controller.signal
+  const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);  const [selectedKeywords, setSelectedKeywords] = useState([]);
+  const [keywordsConfirmed, setKeywordsConfirmed] = useState(false);
+
+  // Fetch news for a specific search query
+  const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) => {
+    try {
+      // Set loading state based on whether this is a keyword query or regular search
+      if (isKeywordQuery) {
+        setLoadingKeywords(prev => ({ ...prev, [keyword]: true }));
+      } else {
+        setLoading(true);
       }
-    );
+        setError('');    console.log(`Fetching news for "${searchQuery}"`);    
     
-    clearTimeout(timeoutId); // Clear timeout on success
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
     
-    // Log the actual results count to see if the backend is respecting our maxResults parameter
-    console.log(`Received ${response.data.length} results from backend for query "${searchQuery}"`);
+      // Remove all filter parameters, only keep the maxResults
+      const response = await axios.get(
+        `${BACKEND_URL.replace(/\/+$/, '')}/news/${encodeURIComponent(searchQuery)}`, {
+          params: {
+            maxResults: 100,
+            max_results: 100,  // Try snake_case version 
+            count: 100,        // Another common parameter name
+            limit: 100,        // Another possible parameter name
+            num: 100           // Yet another possibility
+          },
+          signal: controller.signal
+        }
+      );
     
-    // Check if response headers contain any information about result limits
-    console.log('Response headers:', response.headers);
+      clearTimeout(timeoutId); // Clear timeout on success
     
-    // Check if response contains error or articles array
-    if (response.data.error) {
-      throw new Error(response.data.error);
-    }
+      // Log the actual results count to see if the backend is respecting our maxResults parameter
+      console.log(`Received ${response.data.length} results from backend for query "${searchQuery}"`);
     
-    // Ensure we always set an array
-    const articles = Array.isArray(response.data) ? response.data : [];
+      // Check if response headers contain any information about result limits
+      console.log('Response headers:', response.headers);
     
-    if (isKeywordQuery) {
-      // For keyword queries, store results in the keywordResults object
-      setKeywordResults(prev => ({
-        ...prev,
-        [keyword]: articles
-      }));
-      
-      // If this is the first keyword or the active keyword, also update the main news display
-      if (activeKeyword === keyword || !activeKeyword) {
+      // Check if response contains error or articles array
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+    
+      // Ensure we always set an array
+      const articles = Array.isArray(response.data) ? response.data : [];
+    
+      if (isKeywordQuery) {
+        // For keyword queries, store results in the keywordResults object
+        setKeywordResults(prev => ({
+          ...prev,
+          [keyword]: articles
+        }));
+        
+        // If this is the first keyword or the active keyword, also update the main news display
+        if (activeKeyword === keyword || !activeKeyword) {
+          setNews(articles);
+          setActiveKeyword(keyword);
+        }
+        
+        console.log(`Fetched ${articles.length} articles for keyword: "${keyword}"`);
+      } else {
+        // For regular searches, just update the news state
         setNews(articles);
-        setActiveKeyword(keyword);
+        console.log(`Fetched ${articles.length} articles`);
+      }  } catch (err) {
+      console.error('Error fetching news:', err);
+    
+      let errorMessage;
+      if (err.name === 'AbortError' || err.code === 'ECONNABORTED') {
+        errorMessage = 'Request timed out. The server might be unavailable or overloaded.';
+      } else if (err.code === 'ERR_NETWORK') {
+        errorMessage = 'Network error. Please check your connection to the internet.';
+      } else {
+        // Get the error message from the backend if available
+        errorMessage = err.response?.data?.error || 'Failed to fetch news. Please try again.';
       }
-      
-      console.log(`Fetched ${articles.length} articles for keyword: "${keyword}"`);
-    } else {
-      // For regular searches, just update the news state
-      setNews(articles);
-      console.log(`Fetched ${articles.length} articles`);
-    }  } catch (err) {
-    console.error('Error fetching news:', err);
     
-    let errorMessage;
-    if (err.name === 'AbortError' || err.code === 'ECONNABORTED') {
-      errorMessage = 'Request timed out. The server might be unavailable or overloaded.';
-    } else if (err.code === 'ERR_NETWORK') {
-      errorMessage = 'Network error. Please check your connection to the internet.';
-    } else {
-      // Get the error message from the backend if available
-      errorMessage = err.response?.data?.error || 'Failed to fetch news. Please try again.';
-    }
+      const errorDetails = err.response?.data?.details;    
+      setError(errorMessage);
     
-    const errorDetails = err.response?.data?.details;    
-    setError(errorMessage);
+      if (errorDetails) {
+        console.error('Error details:', errorDetails);
+      }
     
-    if (errorDetails) {
-      console.error('Error details:', errorDetails);
+      // Clear results appropriately
+      if (isKeywordQuery) {
+        setKeywordResults(prev => ({
+          ...prev,
+          [keyword]: []
+        }));
+      } else {
+        setNews([]);
+      }
+    } finally {
+      if (isKeywordQuery) {
+        setLoadingKeywords(prev => ({ ...prev, [keyword]: false }));
+      } else {
+        setLoading(false);
+      }
     }
-    
-    // Clear results appropriately
-    if (isKeywordQuery) {
-      setKeywordResults(prev => ({
-        ...prev,
-        [keyword]: []
-      }));
-    } else {
-      setNews([]);
-    }
-  } finally {
-    if (isKeywordQuery) {
-      setLoadingKeywords(prev => ({ ...prev, [keyword]: false }));
-    } else {
-      setLoading(false);
-    }
-  }
-};  // fetchOptions function has been removed// Fetch initial news
+  };  // fetchOptions function has been removed// Fetch initial news
   useEffect(() => {
     fetchNews(query);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -171,28 +174,41 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
   // Handle client selection from dropdown
   const handleClientSelect = (client) => {
     setSelectedClient(client);
-    // Clear existing news when changing clients
     setNews([]);
-    
+    setSelectedKeywords([]);
+    setKeywordsConfirmed(false);
+    setActiveKeyword(null);
     if (client) {
-      // Fetch news for all keywords of this client
-      fetchAllClientKeywords(client);
+      // Do not fetch news yet, wait for keyword selection
     }
   };
 
-  // Handle keyword selection for a client (switching between tabs)
-  const handleClientKeywordSelect = (keyword) => {
-    setActiveKeyword(keyword);
-    setCurrentPage(1); // Reset to first page when switching keywords
-    
-    // If we already have results for this keyword, display them
-    if (keywordResults[keyword]) {
-      setNews(keywordResults[keyword]);
-    } else {
-      // Otherwise fetch them
-      fetchNews(keyword, true, keyword);
+  // New: handle keyword checkbox change
+  const handleKeywordCheckbox = (keyword) => {
+    setSelectedKeywords((prev) =>
+      prev.includes(keyword)
+        ? prev.filter((k) => k !== keyword)
+        : [...prev, keyword]
+    );
+  };
+
+  // New: confirm keyword selection and fetch news
+  const handleConfirmKeywords = () => {
+    setKeywordsConfirmed(true);
+    if (selectedClient && selectedKeywords.length > 0) {
+      // Fetch news for selected keywords only
+      setKeywordResults({});
+      setActiveKeyword(selectedKeywords[0]);
+      setLoadingKeywords(
+        selectedKeywords.reduce((acc, k) => {
+          acc[k] = true;
+          return acc;
+        }, {})
+      );
+      Promise.allSettled(selectedKeywords.map((keyword) => fetchNews(keyword, true, keyword)));
     }
   };
+
   // Force fetch with different parameter name if we're not getting enough results
   const forceFetchMoreResults = (keyword) => {
     if (!keyword) return;
@@ -423,45 +439,38 @@ const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) =>
             clients={clients} 
             selectedClient={selectedClient}
             onClientSelect={handleClientSelect}
-            onKeywordSelect={handleClientKeywordSelect}
           />
         </div>
-          <Form onSubmit={handleSubmit} className="mb-4">
-          <div className="search-container shadow-sm rounded overflow-hidden border-0">
-            <Row className="g-0">
-              <Col md={8} className="position-relative">
-                <div className="search-icon-wrapper">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-search text-secondary" viewBox="0 0 16 16">
-                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                  </svg>
-                </div>
-                <Form.Group className="mb-0">
-                  <Form.Control
-                    type="text"
-                    placeholder="Search for news topics, companies, or events..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className="ps-5 py-3 border-0 search-input"
+        {/* Keyword selection step for clients */}
+        {selectedClient && !keywordsConfirmed && (
+          <Card className="mb-4">
+            <Card.Body>
+              <h6 className="mb-3">Select keywords to search for <span className="text-primary">{selectedClient.name}</span>:</h6>
+              <div className="d-flex flex-wrap gap-2 mb-3">
+                {selectedClient.keywords.map((keyword) => (
+                  <Form.Check
+                    key={keyword}
+                    type="checkbox"
+                    id={`keyword-${keyword}`}
+                    label={keyword}
+                    checked={selectedKeywords.includes(keyword)}
+                    onChange={() => handleKeywordCheckbox(keyword)}
+                    className="me-3 mb-2"
                   />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Button 
-                  variant="primary" 
-                  type="submit" 
-                  className="w-100 h-100 rounded-0 py-3 d-flex align-items-center justify-content-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-search me-2" viewBox="0 0 16 16">
-                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                  </svg>
-                  Search
-                </Button>
-              </Col>            </Row>
-          </div>        </Form>        
-        {/* Active Filters Display has been removed */}        {/* Category filters have been removed */}
-        
-        {error && <div className="alert alert-danger shadow-sm border-0">{error}</div>}        {/* Client-specific keyword news results */}
-        {selectedClient && (
+                ))}
+              </div>
+              <Button
+                variant="primary"
+                disabled={selectedKeywords.length === 0}
+                onClick={handleConfirmKeywords}
+              >
+                Search News Insights
+              </Button>
+            </Card.Body>
+          </Card>
+        )}
+        {/* Only show news insights if keywords are confirmed */}
+        {selectedClient && keywordsConfirmed && (
           <div className="keyword-results-container mt-4 mb-5">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <div className="d-flex align-items-center">
