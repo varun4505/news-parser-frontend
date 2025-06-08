@@ -274,4 +274,39 @@ const clients = [
   keywords: [publicationCoverageKeyword, ...client.keywords]
 }));
 
+// List of all publications for 'All Publications Coverage'
+export const publicationList = [
+  "The Hindu",
+  "Times of India",
+  "Deccan Chronicle",
+  "The New Indian Express",
+  "Business Standard",
+  "Economic Times",
+  "Financial Express",
+  "Mint",
+  "Hindustan Times",
+  "The Telegraph",
+  "The Pioneer",
+  "Siasat Daily",
+  "Eenadu",
+  "Sakshi",
+  "Namasthe Telangana",
+  "Andhra Jyothi",
+  "Hans India",
+  "Telangana Today",
+  "The Print",
+  "News18",
+  "NDTV",
+  "India Today",
+  "Zee News",
+  "ANI",
+  "PTI",
+  "Outlook India",
+  "The Wire",
+  "Scroll.in",
+  "The Quint",
+  "Firstpost",
+  "The Week"
+];
+
 export default clients;
