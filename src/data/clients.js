@@ -1,4 +1,15 @@
 // List of clients with their associated news keywords
+const publicationCoverageKeyword = 'All Publications Coverage';
+const publicationList = [
+  'Eenadu', 'Sakshi', 'Andhra Jyothi', 'Namaste Telangana', 'Prajashakti',
+  'The Times of India', 'The Hindu', 'Deccan Chronicle', 'The New Indian Express',
+  'Telangana Today', 'The Hans India', 'The Metro India', 'The Pioneer',
+  'PTI', 'UNI', 'IANS', 'ANI', 'AFP', 'Outlook', 'The Week', 'Business Today',
+  'India Today', 'Business World', 'Business india', 'Economic Times',
+  'HT Mint', 'Business Standard', 'Financial Express', 'Bizz Buzz',
+  'Free Press Journal', 'Money Control', 'Your Story', 'Inc42'
+];
+
 const clients = [
   {
     id: 1,
@@ -267,6 +278,9 @@ const clients = [
       "Manthan International School"
     ]
   }
-];
+].map(client => ({
+  ...client,
+  keywords: [publicationCoverageKeyword, ...client.keywords]
+}));
 
 export default clients;
