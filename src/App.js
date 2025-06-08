@@ -11,7 +11,6 @@ import ClientDropdown from './components/ClientDropdown';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import ToastNotification from './components/ToastNotification';
-import ScrollToTop from './components/ScrollToTop';
 import clients from './data/clients';
 
 // Use the deployed backend URL when available, fallback to localhost for development
@@ -140,36 +139,7 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);  // Filter-related useEffect hooks have been removed
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (query.trim()) {
-      fetchNews(query);
-    }
-  };
-  // Removed handleCategoryClick function as it's no longer used after filtering functionality removal
-  // Fetch news for all keywords of a client
-  const fetchAllClientKeywords = async (client) => {
-    if (!client || !client.keywords || client.keywords.length === 0) return;
-    
-    // Reset keyword results when changing clients
-    setKeywordResults({});
-    setActiveKeyword(null);
-    
-    // Initialize loading state for all keywords
-    const initialLoadingState = client.keywords.reduce((acc, keyword) => {
-      acc[keyword] = true;
-      return acc;
-    }, {});
-    setLoadingKeywords(initialLoadingState);
-    
-    // Fetch news for each keyword in parallel
-    const promises = client.keywords.map(keyword => 
-      fetchNews(keyword, true, keyword)
-    );
-    
-    // Wait for all requests to complete
-    await Promise.allSettled(promises);
-  };
+  // Removed unused handleSubmit and fetchAllClientKeywords
 
   // Handle client selection from dropdown
   const handleClientSelect = (client) => {
@@ -431,9 +401,6 @@ function App() {
       {/* Mobile filter panel */}
       {mobileFilterOpen && <div className="filter-panel-overlay open" onClick={() => setMobileFilterOpen(false)}></div>}
       
-      {/* Scroll to top button */}
-      <ScrollToTop threshold={300} />
-      
       {/* Toast notifications */}
       {toast.show && (
         <ToastNotification
@@ -544,18 +511,19 @@ function App() {
                   ) : (
                     <>
                       <Row>
-                        {getPaginatedResults(keyword) && getPaginatedResults(keyword).length > 0 ? (
-                          getPaginatedResults(keyword).map((article, index) => (
-                            <Col lg={4} md={6} className="mb-4" key={index}>
-                              <NewsCard 
-                                article={article} 
-                                onArticleSelect={handleArticleToggle}
-                                isSelected={isArticleSelected(article)}
-                              />
-                            </Col>
-                          ))                        ) : (
-                          <EmptyState keyword={keyword} onReset={handleResetFilters} />
-                        )}
+                        {getPaginatedResults(keyword) && getPaginatedResults(keyword).length > 0 ?
+  getPaginatedResults(keyword).map((article, index) => (
+    <Col lg={4} md={6} className="mb-4" key={index}>
+      <NewsCard 
+        article={article} 
+        onArticleSelect={handleArticleToggle}
+        isSelected={isArticleSelected(article)}
+      />
+    </Col>
+  ))
+  : (
+    <EmptyState message={`No news articles found for "${keyword}".`} onReset={handleResetFilters} />
+  )}
                       </Row>                      {/* Pagination controls */}
                       <div className="d-flex flex-column align-items-center my-4">
                         <nav>
@@ -659,18 +627,19 @@ function App() {
             </div>
           ) : (
             <Row>
-              {news.length > 0 ? (
-                news.map((article, index) => (
-                  <Col lg={4} md={6} className="mb-4" key={index}>
-                    <NewsCard 
-                      article={article} 
-                      onArticleSelect={handleArticleToggle}
-                      isSelected={isArticleSelected(article)}
-                    />
-                  </Col>
-                ))              ) : (
-                <EmptyState message="No news articles found. Try a different search term or adjust your filters." onReset={handleResetFilters} />
-              )}
+              {news.length > 0
+  ? news.map((article, index) => (
+      <Col lg={4} md={6} className="mb-4" key={index}>
+        <NewsCard 
+          article={article} 
+          onArticleSelect={handleArticleToggle}
+          isSelected={isArticleSelected(article)}
+        />
+      </Col>
+    ))
+  : (
+      <EmptyState message="No news articles found. Try a different search term or adjust your filters." onReset={handleResetFilters} />
+    )}
             </Row>
           )
         )}        {/* Display server connection error separately */}
@@ -862,9 +831,6 @@ Please review our website: https://www.konnectionsimag.com`}
           </Button>        </Modal.Footer>
       </Modal>
         {/* Mobile filter panel and trigger button have been removed */}
-      
-      {/* Scroll to top button */}
-      <ScrollToTop threshold={300} />
       
       {/* Toast notifications */}
       {toast.show && (

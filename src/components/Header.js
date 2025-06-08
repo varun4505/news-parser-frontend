@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Button, Nav } from 'react-bootstrap';
+import { Container, Button } from 'react-bootstrap';
 import { FaQuestionCircle } from 'react-icons/fa';
 import { BsGear } from 'react-icons/bs';
 
