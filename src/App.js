@@ -403,7 +403,7 @@ function App() {
       fetchNews('latest news');
       setGeneralSearchQuery('latest news');
     }
-  }, [selectedClient]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedClient]);
 
   // Show toast notification
   const showToast = (message, type = 'success') => {
