@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
 import { Form, Card, Badge } from 'react-bootstrap';
-import { BsBuilding, BsBriefcase, BsGrid, BsSearch } from 'react-icons/bs';
+import { BsBuilding, BsBriefcase, BsGrid } from 'react-icons/bs';
 
-const ClientDropdown = ({ clients, selectedClient, onClientSelect, onKeywordSelect }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+const ClientDropdown = ({ clients, selectedClient, onClientSelect }) => {
   const [showIndustryFilter, setShowIndustryFilter] = useState(false);
   
   const industries = [...new Set(clients.map(client => client.industry))];
-  
-  const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.industry.toLowerCase().includes(searchTerm.toLowerCase())
-  );
   
   return (
     <Card className="client-search-card mb-4 border-0 shadow-sm">
@@ -40,7 +34,7 @@ const ClientDropdown = ({ clients, selectedClient, onClientSelect, onKeywordSele
                 <Badge 
                   key={index} 
                   className="industry-badge"
-                  onClick={() => setSearchTerm(industry)}
+                  onClick={() => {}}
                   bg="light"
                 >
                   {industry}
@@ -50,31 +44,10 @@ const ClientDropdown = ({ clients, selectedClient, onClientSelect, onKeywordSele
           </div>
         )}
         
-        <Form.Group className="mb-3">
-          <div className="search-input-wrapper">
-            <BsSearch className="search-icon text-secondary" size={14} />
-            <Form.Control
-              type="text"
-              placeholder="Search clients..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="client-search-input"
-            />
-            {searchTerm && (
-              <button 
-                className="btn btn-sm text-secondary clear-button" 
-                onClick={() => setSearchTerm('')}
-              >
-                &times;
-              </button>
-            )}
-          </div>
-        </Form.Group>
-        
         <Form.Group>
           <Form.Label className="small text-secondary fw-medium d-flex align-items-center">
             <span className="me-1">Select client</span>
-            <span className="client-count">{filteredClients.length}</span>
+            <span className="client-count">{clients.length}</span>
           </Form.Label>
           <div className="client-select-wrapper">
             <Form.Select
@@ -88,7 +61,7 @@ const ClientDropdown = ({ clients, selectedClient, onClientSelect, onKeywordSele
               className="form-select-lg custom-select"
             >
               <option value="">-- Select a client --</option>
-              {filteredClients.map(client => (
+              {clients.map(client => (
                 <option key={client.id} value={client.id}>
                   {client.name} ({client.industry})
                 </option>

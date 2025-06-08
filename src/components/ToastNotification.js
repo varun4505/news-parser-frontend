@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BsCheckCircleFill, BsExclamationTriangleFill, BsInfoCircleFill } from 'react-icons/bs';
 
 const ToastNotification = ({ message, type = 'success', duration = 3000, onClose }) => {
   const [visible, setVisible] = useState(true);
   const [progress, setProgress] = useState(100);
   
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setVisible(false);
     setTimeout(() => {
       if (onClose) onClose();
     }, 300);
-  };
+  }, [onClose]);
   
   useEffect(() => {
     // Auto-close after duration
