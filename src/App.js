@@ -11,7 +11,7 @@ import ClientDropdown from './components/ClientDropdown';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import ToastNotification from './components/ToastNotification';
-import clients from './data/clients';
+import clients, { publicationList } from './data/clients';
 
 // Use the deployed backend URL when available, fallback to localhost for development
 const BACKEND_URL = 'https://news-parser-ai.vercel.app';
@@ -36,6 +36,51 @@ function App() {
 
   // Fetch news for a specific search query
   const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) => {
+    // If searching for All Publications Coverage, fetch for all publications
+    if (keyword === 'All Publications Coverage') {
+      setLoadingKeywords(prev => ({ ...prev, [keyword]: true }));
+      setError('');
+      let allArticles = [];
+      try {
+        // Fetch news for each publication in parallel
+        const results = await Promise.all(
+          publicationList.map(pub =>
+            axios.get(
+              `${BACKEND_URL.replace(/\/+$/, '')}/news/${encodeURIComponent(pub)}`,
+              {
+                params: {
+                  maxResults: 100,
+                  max_results: 100,
+                  count: 100,
+                  limit: 100,
+                  num: 100
+                }
+              }
+            ).then(res => Array.isArray(res.data) ? res.data : [])
+              .catch(() => [])
+          )
+        );
+        // Flatten and deduplicate articles by link
+        allArticles = results.flat();
+        const seen = new Set();
+        allArticles = allArticles.filter(article => {
+          if (!article.link || seen.has(article.link)) return false;
+          seen.add(article.link);
+          return true;
+        });
+        setKeywordResults(prev => ({ ...prev, [keyword]: allArticles }));
+        if (activeKeyword === keyword || !activeKeyword) {
+          setNews(allArticles);
+          setActiveKeyword(keyword);
+        }
+      } catch (err) {
+        setError('Failed to fetch news for all publications.');
+        setKeywordResults(prev => ({ ...prev, [keyword]: [] }));
+      } finally {
+        setLoadingKeywords(prev => ({ ...prev, [keyword]: false }));
+      }
+      return;
+    }
     try {
       // Set loading state based on whether this is a keyword query or regular search
       if (isKeywordQuery) {
