@@ -473,20 +473,21 @@
   bottom: 32px;
   right: 32px;
   z-index: 1050;
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  background: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color) 60%, var(--accent-color) 100%);
   color: #fff;
   border: none;
-  box-shadow: 0 4px 16px rgba(30, 95, 116, 0.18);
+  box-shadow: 0 6px 24px rgba(30, 95, 116, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s, transform 0.3s;
-  font-size: 1.5rem;
+  transition: opacity 0.3s, transform 0.3s, box-shadow 0.3s, background 0.3s;
+  font-size: 2rem;
+  animation: bounce-in 0.7s cubic-bezier(.68,-0.55,.27,1.55);
 }
 
 .scroll-to-top-btn.visible {
@@ -496,7 +497,15 @@
 }
 
 .scroll-to-top-btn:hover {
-  background: var(--dark-color);
+  background: linear-gradient(135deg, var(--dark-color) 60%, var(--accent-color) 100%);
   color: #fff;
-  transform: translateY(-4px) scale(1.08);
+  transform: translateY(-8px) scale(1.12) rotate(-8deg);
+  box-shadow: 0 12px 32px rgba(30, 95, 116, 0.32);
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.7) translateY(40px); opacity: 0; }
+  60% { transform: scale(1.1) translateY(-10px); opacity: 1; }
+  80% { transform: scale(0.95) translateY(2px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
 }
