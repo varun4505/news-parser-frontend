@@ -15,7 +15,7 @@ import clients, { publicationList } from './data/clients';
 
 // Use the deployed backend URL when available, fallback to localhost for development
 const BACKEND_URL = 'https://news-parser-ai.vercel.app';
-const EMAIL_API_URL = 'https://nodemailer-lac.vercel.app/api/send-email'; // Vercel API endpoint
+const EMAIL_API_URL = process.env.REACT_APP_EMAIL_API_URL;
 
 function App() {
   const [query, setQuery] = useState('latest news');
