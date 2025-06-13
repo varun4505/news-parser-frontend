@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { Container, Row, Col, Form, Button, Spinner, Tabs, Tab, Badge, Modal, Card } from 'react-bootstrap';
 import axios from 'axios';
-import emailjs from '@emailjs/browser';
-import { EMAILJS_CONFIG } from './config/email';
+import { EMAIL_API_CONFIG } from './config/email';
 import './App.css';
 import NewsCard from './components/NewsCard';
 import Header from './components/Header';
@@ -350,8 +349,7 @@ function App() {
         });
     }
   };
-  
-  // Function to send email via EmailJS
+    // Function to send email via backend API using nodemailer
   const sendEmail = async () => {
     if (!receiverEmail) {
       alert('Please enter a recipient email address');
@@ -368,36 +366,42 @@ function App() {
         `${index + 1}. ${article.title}\n${article.description || 'No description available'}\nPublication: ${article.publication || 'N/A'}      Journalist: ${article.journalist || 'Online'}\nLink: ${article.link}\n`
       ).join('\n');
       
-      // Prepare the template parameters
-      const templateParams = {
+      // Prepare the request payload
+      const emailData = {
         to_email: receiverEmail,
         subject: emailSubject,
         client_name: selectedClient ? selectedClient.name : '',
         email_content: emailContent,
         from_name: 'Konnections IMAG News Tracking',
       };
-        // Send the email using EmailJS with configuration from config file
-      const result = await emailjs.send(
-        EMAILJS_CONFIG.serviceId,
-        EMAILJS_CONFIG.templateId,
-        templateParams,
-        EMAILJS_CONFIG.userId
+
+      // Send the email using the backend API
+      const response = await axios.post(
+        `${EMAIL_API_CONFIG.baseUrl}${EMAIL_API_CONFIG.endpoints.sendEmail}`,
+        emailData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
       );
       
-      console.log('Email sent successfully:', result.text);
-      alert('Email sent successfully!');
-      setShowMailModal(false);
+      if (response.data.success) {
+        console.log('Email sent successfully:', response.data.messageId);
+        alert('Email sent successfully!');
+        setShowMailModal(false);
+      } else {
+        throw new Error(response.data.message || 'Failed to send email');
+      }
     } catch (error) {
       console.error('Failed to send email:', error);
-      alert(`Failed to send email: ${error.text}`);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to send email';
+      alert(`Failed to send email: ${errorMessage}`);
     } finally {
       setIsScrapingInProgress(false);
     }
-  };  // Initialize EmailJS and fetch initial news
+  };  // Initialize app and fetch initial news
   useEffect(() => {
-    // Initialize EmailJS with your User ID
-    emailjs.init(EMAILJS_CONFIG.userId);
-    
     // Only fetch initial news if no client is selected
     if (!selectedClient) {
       fetchNews('latest news');
