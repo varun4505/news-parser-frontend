@@ -1,104 +1,61 @@
 # News Parser Frontend
 
-A React-based frontend application for parsing, displaying, and sending news updates via email using a Node.js backend with nodemailer.
+A React-based frontend application for parsing, displaying, and sending news updates via email.
 
 ## Email Functionality
 
-This application uses a Node.js backend server with nodemailer to send emails. The system consists of:
-- **Frontend**: React application for the user interface
-- **Backend**: Express.js server that handles email sending
+This application uses EmailJS to send emails directly from the frontend. To set up the email sending feature:
 
-## Setup Instructions
+1. Create an account at [EmailJS](https://www.emailjs.com/)
+2. Create a new Email Service (e.g., Gmail, Outlook, or another email provider)
+3. Create an Email Template with the following variables:
+   - `{{to_email}}` - Recipient's email address
+   - `{{subject}}` - Email subject
+   - `{{client_name}}` - Client's name
+   - `{{email_content}}` - Formatted news content
+   - `{{from_name}}` - Sender's name
 
-### Backend Server Setup
+4. Update the configuration in `src/config/email.js` with your:
+   - Service ID
+   - Template ID
+   - User ID (Public Key)
 
-1. Navigate to the server directory:
-   ```bash
-   cd server
-   ```
+## Example Email Template
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+```
+Subject: {{subject}}
 
-3. Configure email credentials:
-   ```bash
-   cp .env.example .env
-   ```
+Dear Sir/Madam,
 
-4. Edit the `.env` file with your email credentials:
-   ```
-   EMAIL_SERVICE=gmail
-   EMAIL_USER=your-email@gmail.com
-   EMAIL_PASSWORD=your-app-password
-   PORT=5000
-   ```
+Greetings from {{from_name}}.
 
-   **For Gmail users:**
-   - Enable 2-factor authentication
-   - Generate an "App Password" (not your regular password)
-   - Use the app password in `EMAIL_PASSWORD`
+Please find below the {{client_name}} Industry News Updates:
 
-5. Start the backend server:
-   ```bash
-   npm run dev  # For development with nodemon
-   # or
-   npm start    # For production
-   ```
+{{email_content}}
 
-### Frontend Setup
+Warm Regards,
+Tracking Team
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Configure the API URL (optional):
-   - The frontend is configured to use `http://localhost:5000` by default
-   - To change this, set the `REACT_APP_API_URL` environment variable
-
-3. Start the development server:
-   ```bash
-   npm start
-   ```
+Integrated Marketing Communication Consultancy
+Please review our website: https://www.konnectionsimag.com
+```
 
 ## Features
 
 - Search for news articles
 - Filter by language, country, and time period
 - Client-specific keyword tracking
-- Email article selections to clients with beautiful HTML formatting
+- Email article selections to clients
 - Copy email content to clipboard
-- Secure server-side email sending with nodemailer
+- Direct email sending via EmailJS integration
 
-## Email Template
+## Getting Started
 
-The system automatically generates professional HTML emails with:
-- Responsive design
-- Branded header and footer
-- Formatted news articles with titles, descriptions, and links
-- Plain text fallback for email clients that don't support HTML
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Configure EmailJS: Update credentials in `src/config/email.js`
+4. Start the development server: `npm start`
 
 ## Environment Variables
 
-### Frontend
-- `REACT_APP_API_URL`: Backend API URL (default: http://localhost:5000)
-
-### Backend
-- `EMAIL_SERVICE`: Email service provider (gmail, outlook, yahoo, etc.)
-- `EMAIL_USER`: Your email address
-- `EMAIL_PASSWORD`: Your email password or app password
-- `PORT`: Server port (default: 5000)
-
-## Project Structure
-
-```
-├── src/                    # Frontend React application
-├── server/                 # Backend Node.js server
-│   ├── server.js          # Main server file
-│   ├── package.json       # Backend dependencies
-│   ├── .env.example       # Environment variables template
-│   └── .gitignore         # Git ignore for backend
-└── README.md              # This file
-```
+To configure the backend URL, update the `BACKEND_URL` constant in `App.js`.
