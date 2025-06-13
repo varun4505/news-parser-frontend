@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { Container, Row, Col, Form, Button, Spinner, Tabs, Tab, Badge, Modal, Card } from 'react-bootstrap';
 import axios from 'axios';
-import emailjs from '@emailjs/browser';
-import { EMAILJS_CONFIG } from './config/email';
+// import emailjs from '@emailjs/browser'; // Removed EmailJS
+// import { EMAILJS_CONFIG } from './config/email'; // Removed EmailJS config
 import './App.css';
 import NewsCard from './components/NewsCard';
 import Header from './components/Header';
@@ -15,6 +15,7 @@ import clients, { publicationList } from './data/clients';
 
 // Use the deployed backend URL when available, fallback to localhost for development
 const BACKEND_URL = 'https://news-parser-ai.vercel.app';
+const EMAIL_API_URL = 'https://nodemailer-lac.vercel.app/api/send-email'; // Vercel API endpoint
 
 function App() {
   const [query, setQuery] = useState('latest news');
@@ -351,53 +352,40 @@ function App() {
     }
   };
   
-  // Function to send email via EmailJS
+  // Function to send email via Nodemailer API
   const sendEmail = async () => {
     if (!receiverEmail) {
       alert('Please enter a recipient email address');
       return;
     }
-    
     try {
       setIsScrapingInProgress(true); // Reuse the loading state for email sending
-      
       const emailSubject = `${selectedClient ? selectedClient.name + ' ' : ''}Industry News Update - ${formatCurrentDate()}`;
-      
       // Format the email body for sending
       const emailContent = selectedArticles.map((article, index) => 
         `${index + 1}. ${article.title}\n${article.description || 'No description available'}\nPublication: ${article.publication || 'N/A'}      Journalist: ${article.journalist || 'Online'}\nLink: ${article.link}\n`
       ).join('\n');
-      
-      // Prepare the template parameters
-      const templateParams = {
-        to_email: receiverEmail,
+      // Send email via backend API
+      const response = await axios.post(EMAIL_API_URL, {
+        to: receiverEmail,
         subject: emailSubject,
-        client_name: selectedClient ? selectedClient.name : '',
-        email_content: emailContent,
-        from_name: 'Konnections IMAG News Tracking',
-      };
-        // Send the email using EmailJS with configuration from config file
-      const result = await emailjs.send(
-        EMAILJS_CONFIG.serviceId,
-        EMAILJS_CONFIG.templateId,
-        templateParams,
-        EMAILJS_CONFIG.userId
-      );
-      
-      console.log('Email sent successfully:', result.text);
-      alert('Email sent successfully!');
-      setShowMailModal(false);
+        text: emailContent,
+        html: emailContent.replace(/\n/g, '<br>'),
+      });
+      if (response.data.success) {
+        alert('Email sent successfully!');
+        setShowMailModal(false);
+      } else {
+        throw new Error(response.data.message || 'Unknown error');
+      }
     } catch (error) {
       console.error('Failed to send email:', error);
-      alert(`Failed to send email: ${error.text}`);
+      alert(`Failed to send email: ${error.message}`);
     } finally {
       setIsScrapingInProgress(false);
     }
   };  // Initialize EmailJS and fetch initial news
   useEffect(() => {
-    // Initialize EmailJS with your User ID
-    emailjs.init(EMAILJS_CONFIG.userId);
-    
     // Only fetch initial news if no client is selected
     if (!selectedClient) {
       fetchNews('latest news');
@@ -848,7 +836,7 @@ function App() {
                     value={receiverEmail}
                     onChange={(e) => setReceiverEmail(e.target.value)}
                     required
-                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
                     className="ps-5 py-3"
                   />
                 </div>
