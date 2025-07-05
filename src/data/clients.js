@@ -7,6 +7,7 @@ const clients = [
     name: "Ashoka One Mall",
     industry: "Retail/Real Estate",
     keywords: [
+      "Ashoka One Mall news",
       "Hyderabad retail real estate",
       "retail trends Telangana",
       "shopping mall news India",
@@ -70,6 +71,7 @@ const clients = [
     name: "Freedom Healthy Cooking Oils (GEF India)",
     industry: "FMCG/Food",
     keywords: [
+      "Freedom Healthy Cooking Oils news",
       "edible oil market India",
       "healthy cooking oil trends",
       "GEF India news",
@@ -92,6 +94,7 @@ const clients = [
     name: "Jai Raj Ispat Limited",
     industry: "Steel & Manufacturing",
     keywords: [
+      "Jai Raj Ispat news",
       "steel industry India",
       "TMT bars Telangana",
       "Jai Raj Ispat news",
@@ -114,6 +117,7 @@ const clients = [
     name: "CREDAI Hyderabad",
     industry: "Real Estate Developers Association",
     keywords: [
+      "CREDAI Hyderabad news",
       "Hyderabad real estate trends",
       "CREDAI Hyderabad updates",
       "housing sector Telangana",
@@ -137,10 +141,11 @@ const clients = [
     name: "Hyatt Hyderabad Gachibowli",
     industry: "Hospitality",
     keywords: [
+      "Hyatt Hyderabad Gachibowli news",
       "Hyatt India news",
       "Hyderabad hotel industry",
       "luxury hotel trends India",
-      "Gachibowli tourism",
+      "Hyderabad tourism",
       "hospitality sector recovery India",
       "Marriott Hyderabad",
       "Novotel HICC",
@@ -157,34 +162,14 @@ const clients = [
   },
   {
     id: 8,
-    name: "Mercure Hyderabad KCP",
-    industry: "Hospitality",
-    keywords: [
-      "Accor Group India",
-      "Mercure hotels news",
-      "Hyderabad hotel market",
-      "midscale hotel trends India",
-      "travel and tourism Hyderabad",
-      "Novotel Hyderabad",
-      "ibis Hyderabad",
-      "Fairfield by Marriott",
-      "Courtyard by Marriott",
-      "Holiday Inn Express",
-      "Lemon Tree Hotels",
-      "Fortune Hotels",
-      "Taj Deccan",
-      "Vivanta Hyderabad",
-      "Park Inn by Radisson"
-    ]
-  },
-  {
-    id: 9,
     name: "Ankura Hospital",
     industry: "Healthcare",
     keywords: [
       "Ankura Hospital news",
       "women health India",
+      "women's healthcare Hyderabad",
       "children health India",
+      "pediatric healthcare Hyderabad",
       "Hyderabad hospital updates",
       "healthcare innovation India",
       "private hospitals Telangana",
@@ -193,19 +178,25 @@ const clients = [
       "Care Hospitals",
       "KIMS Hospital",
       "Yashoda Hospitals",
-      "Rainbow Children's Hospital",
-      "Fernandez Hospital",
-      "maternity services Hyderabad",
-      "pediatric healthcare Telangana",
-      "hospital crisis"
+      "Rainbow Children's Hospital Hyderabad",
+      "MaxCure Hospitals",
+      "Medicover Hospitals",
+      "Continental Hospitals",
+      "AIG Hospitals",
+      "Omni Hospitals",
     ]
   },
   {
-    id: 10,
+    id: 9,
     name: "Telangana Life Sciences",
     industry: "Biotech/Pharma Cluster",
     keywords: [
+      "Telangana Life Sciences news",
       "Telangana pharma cluster",
+      "Biotech industry",
+      "Pharma CLuster",
+      "Pharma Industry",
+      "biotech news",
       "life sciences news Hyderabad",
       "biotech investments Telangana",
       "Genome Valley Hyderabad",
@@ -224,7 +215,7 @@ const clients = [
     ]
   },
   {
-    id: 11,
+    id: 10,
     name: "Zithara AI",
     industry: "Tech/AI/Fintech",
     keywords: [
@@ -233,6 +224,9 @@ const clients = [
       "fintech innovation Hyderabad",
       "digital payments trends",
       "AI in retail India",
+      "Salesforce",
+      "Zoho",
+      "hubspot",
       "Fractal Analytics",
       "SigTuple",
       "Haptik AI",
@@ -247,10 +241,11 @@ const clients = [
     ]
   },
   {
-    id: 12,
+    id: 11,
     name: "Premia Academy",
     industry: "Education/Schools",
     keywords: [
+      "Premia Academy news",
       "international schools Hyderabad",
       "CBSE/IB curriculum India",
       "education sector Telangana",
@@ -267,6 +262,50 @@ const clients = [
       "Indus International School",
       "Johnson Grammar School",
       "Manthan International School"
+    ]
+  },
+  {
+    id: 12,
+    name: "Ridhira Groups",
+    industry: "Wellness Real Estate",
+    keywords: [
+      "Ridhira Groups news",
+      "luxury wellness retreat",
+      "spa resort Hyderabad",
+      "wellness real estate India",
+      "luxury retreat Hyderabad",
+      "branded residences wellness",
+      "wellness tourism India",
+      "holistic wellness Hyderabad",
+      "real estate retreat India",
+      "hyderabad luxury living"
+    ]
+  },
+  {
+    id: 13,
+    name: "TVS Electronics",
+    industry: "Electronics/IT",
+    keywords: [
+      "TVS Electronics news",
+      "IT hardware",
+      "point of sale systems",
+      "IT peripherals",
+      "TVS Electronics updates",
+      "computer accessories India",
+      "laptop manufacturing India",
+      "printer industry India",
+      "POS terminals India",
+      "IT services",
+      "Assembled computers",
+      "computer peripherals",
+      "IT hardware manufacturing",
+      "asus products",
+      "dell products",
+      "hp products",
+      "lenovo products",
+      "acer products",
+      "zebronics products",
+      "portronics products",
     ]
   }
 ].map(client => ({
