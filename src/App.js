@@ -496,6 +496,22 @@ function App() {
           <Card className="mb-4">
             <Card.Body>
               <h6 className="mb-3">Select keywords to search for <span className="text-primary">{selectedClient.name}</span>:</h6>
+              <div className="mb-2">
+                <Form.Check
+                  type="checkbox"
+                  id="select-all-keywords"
+                  label="Select All Keywords"
+                  checked={selectedKeywords.length === selectedClient.keywords.length}
+                  onChange={e => {
+                    if (e.target.checked) {
+                      setSelectedKeywords(selectedClient.keywords);
+                    } else {
+                      setSelectedKeywords([]);
+                    }
+                  }}
+                  className="me-3 mb-2 fw-bold"
+                />
+              </div>
               <div className="d-flex flex-wrap gap-2 mb-3">
                 {selectedClient.keywords.map((keyword) => (
                   <Form.Check
