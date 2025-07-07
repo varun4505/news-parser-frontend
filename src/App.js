@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { Container, Row, Col, Form, Button, Spinner, Tabs, Tab, Badge, Modal, Card } from 'react-bootstrap';
 import axios from 'axios';
@@ -12,7 +12,6 @@ import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import ToastNotification from './components/ToastNotification';
 import clients, { publicationList } from './data/clients';
-import GoogleAuth, { isSessionValid, getLoginId } from './components/GoogleAuth';
 
 // Use the deployed backend URL when available, fallback to localhost for development
 const BACKEND_URL = 'https://news-parser-ai.vercel.app';
@@ -39,7 +38,7 @@ function App() {
   const [isGeneralSearching, setIsGeneralSearching] = useState(false);
 
   // Fetch news for a specific search query
-  const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) => {
+  const fetchNews = useCallback(async (searchQuery, isKeywordQuery = false, keyword = null) => {
     // If searching for All Publications Coverage, fetch for each publication with client name
     if (keyword === 'All Publications Coverage' && selectedClient) {
       setLoadingKeywords(prev => ({ ...prev, [keyword]: true }));
@@ -47,10 +46,10 @@ function App() {
       let allArticles = [];
       try {
         // Fetch news for each publication with client name in parallel
-        const results = await Promise.all(
+        await Promise.all(
           publicationList.map(pub =>
             axios.get(
-              `${BACKEND_URL.replace(/\/+$/, '')}/news/${encodeURIComponent(selectedClient.name + ' ' + pub)}`,
+              `${BACKEND_URL.replace(/\/+$|$/, '')}/news/${encodeURIComponent(selectedClient.name + ' ' + pub)}`,
               {
                 params: {
                   maxResults: 100,
@@ -65,11 +64,11 @@ function App() {
           )
         );
         // Flatten and deduplicate articles by link
-        allArticles = results.flat();
-        const seen = new Set();
+        // Only declare 'seen' if not already declared in an outer scope
+        const seenAllPublications = new Set();
         allArticles = allArticles.filter(article => {
-          if (!article.link || seen.has(article.link)) return false;
-          seen.add(article.link);
+          if (!article.link || seenAllPublications.has(article.link)) return false;
+          seenAllPublications.add(article.link);
           return true;
         });
         setKeywordResults(prev => ({ ...prev, [keyword]: allArticles }));
@@ -182,7 +181,7 @@ function App() {
         setLoading(false);
       }
     }
-  };  // fetchOptions function has been removed// Fetch initial news
+  }, [selectedClient, BACKEND_URL, activeKeyword]);  // fetchOptions function has been removed// Fetch initial news
   useEffect(() => {
     fetchNews(query);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -392,7 +391,7 @@ function App() {
       fetchNews('latest news');
       setGeneralSearchQuery('latest news');
     }
-  }, [selectedClient]);
+  }, [selectedClient, fetchNews]);
 
   // Show toast notification
   const showToast = (message, type = 'success') => {

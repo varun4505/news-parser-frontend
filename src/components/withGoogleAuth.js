@@ -1,4 +1,5 @@
-import GoogleAuth, { isSessionValid, getLoginId } from './components/GoogleAuth';
+import React from 'react';
+import GoogleAuth, { isSessionValid, getLoginId } from './GoogleAuth';
 
 export function withGoogleAuth(WrappedComponent) {
   return function AuthWrapper(props) {
