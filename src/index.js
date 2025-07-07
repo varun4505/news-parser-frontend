@@ -6,8 +6,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { withGoogleAuth } from './components/withGoogleAuth';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const AuthApp = withGoogleAuth(App);
 root.render(
   <React.StrictMode>
-    {withGoogleAuth(App)()}
+    <AuthApp />
   </React.StrictMode>
 );
