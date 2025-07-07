@@ -12,6 +12,7 @@ import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import ToastNotification from './components/ToastNotification';
 import clients, { publicationList } from './data/clients';
+import GoogleAuth, { isSessionValid, getLoginId } from './components/GoogleAuth';
 
 // Use the deployed backend URL when available, fallback to localhost for development
 const BACKEND_URL = 'https://news-parser-ai.vercel.app';
