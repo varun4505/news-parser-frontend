@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import GoogleAuthWrapper from './components/GoogleAuthWrapper';
 // eslint-disable-next-line no-unused-vars
 import { Container, Row, Col, Form, Button, Spinner, Tabs, Tab, Badge, Modal, Card } from 'react-bootstrap';
 import axios from 'axios';
@@ -19,33 +18,6 @@ const BACKEND_URL = 'https://news-parser-ai.vercel.app';
 const EMAIL_API_URL = process.env.REACT_APP_EMAIL_API_URL;
 
 function App() {
-  // Persist userEmail in localStorage for 5 hours
-  const [userEmail, setUserEmailState] = useState(() => {
-    const stored = localStorage.getItem('userEmailData');
-    if (stored) {
-      try {
-        const { email, timestamp } = JSON.parse(stored);
-        if (email && timestamp && Date.now() - timestamp < 5 * 60 * 60 * 1000) {
-          return email;
-        } else {
-          localStorage.removeItem('userEmailData');
-        }
-      } catch (e) {
-        localStorage.removeItem('userEmailData');
-      }
-    }
-    return null;
-  });
-
-  // Wrapper to set email and store with timestamp
-  const setUserEmail = (email) => {
-    if (email) {
-      localStorage.setItem('userEmailData', JSON.stringify({ email, timestamp: Date.now() }));
-    } else {
-      localStorage.removeItem('userEmailData');
-    }
-    setUserEmailState(email);
-  };
   const [query, setQuery] = useState('latest news');
   const [news, setNews] = useState([]);
   const [keywordResults, setKeywordResults] = useState({}); // Store results for each keyword
@@ -66,33 +38,6 @@ function App() {
   const [isGeneralSearching, setIsGeneralSearching] = useState(false);
 
   // Fetch news for a specific search query
-
-  // Always call hooks at the top level
-  useEffect(() => {
-    if (!userEmail) return;
-    fetchNews(query);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userEmail]);
-
-  useEffect(() => {
-    if (!userEmail) return;
-    // Only fetch initial news if no client is selected
-    if (!selectedClient) {
-      fetchNews('latest news');
-      setGeneralSearchQuery('latest news');
-    }
-  }, [userEmail, selectedClient]);
-
-  // If not logged in, show Google OAuth
-  if (!userEmail) {
-    return <GoogleAuthWrapper onLogin={setUserEmail} />;
-  }
-
-  // Logout handler
-  const handleLogout = () => {
-    setUserEmail(null);
-    // Optionally clear any other user-related state here
-  };
   const fetchNews = async (searchQuery, isKeywordQuery = false, keyword = null) => {
     // If searching for All Publications Coverage, fetch for each publication with client name
     if (keyword === 'All Publications Coverage' && selectedClient) {
@@ -237,7 +182,10 @@ function App() {
       }
     }
   };  // fetchOptions function has been removed// Fetch initial news
-  // (FIX) Remove this duplicate useEffect, already handled above with [userEmail]
+  useEffect(() => {
+    fetchNews(query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);  // Filter-related useEffect hooks have been removed
 
   // Removed unused handleSubmit and fetchAllClientKeywords
 
@@ -437,7 +385,13 @@ function App() {
       setIsScrapingInProgress(false);
     }
   };  // Initialize EmailJS and fetch initial news
-  // (FIX) Remove this duplicate useEffect, already handled above with [userEmail, selectedClient]
+  useEffect(() => {
+    // Only fetch initial news if no client is selected
+    if (!selectedClient) {
+      fetchNews('latest news');
+      setGeneralSearchQuery('latest news');
+    }
+  }, [selectedClient]);
 
   // Show toast notification
   const showToast = (message, type = 'success') => {
@@ -509,20 +463,16 @@ function App() {
   };
   return (
     <div className="App">
-      <div className="d-flex justify-content-end align-items-center p-2 bg-light border-bottom">
-        <span className="me-3 text-secondary small">{userEmail}</span>
-        <Button variant="outline-danger" size="sm" onClick={handleLogout}>
-          Logout
-        </Button>
-      </div>
       <Header 
         onSearch={handleGeneralSearch}
         searchQuery={generalSearchQuery}
         setSearchQuery={setGeneralSearchQuery}
         isSearching={isGeneralSearching}
       />
+      
       {/* Mobile filter panel */}
       {mobileFilterOpen && <div className="filter-panel-overlay open" onClick={() => setMobileFilterOpen(false)}></div>}
+      
       {/* Toast notifications */}
       {toast.show && (
         <ToastNotification
